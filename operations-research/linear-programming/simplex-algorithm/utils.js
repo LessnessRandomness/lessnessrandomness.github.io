@@ -86,8 +86,11 @@ function Fraction(numerator, denominator = 1) {
     f.denominator = denominator;
     f.toMathML = function() {
         var mn, mo, minus, a, b, t;
+		if (f.numerator === 0n) {
+			return MathML.node("mn", textNode(0n));
+		}
         if (f.denominator === 1n && f.numerator > 0n) {
-            return [MathML.node("mn", textNode(f.numerator))];
+            return MathML.node("mn", textNode(f.numerator));
         }
         if (f.denominator === 1n && f.numerator < 0n) {
             mn = MathML.node("mn", textNode(-f.numerator));
@@ -137,54 +140,54 @@ function LinearExpression(coefficients) {
         }
         if (theFirst === -1)
             throw ("Linear expression equal to zero");
-        var math = [];
+        var M = [];
         var temp = t.coefficients[theFirst];
         var mo, mn, minus, plus;
         if (temp.denominator === 1n) {
             if (temp.numerator === 1n) {
-                math = math.concat(defaultVariables(theFirst));
+                M = M.concat(defaultVariables(theFirst));
             }
             if (temp.numerator === -1n) {
                 minus = MathML.node("mo", textNode("-"));
-                math.push(minus);
-                math = math.push(defaultVariables(theFirst));
+                M.push(minus);
+                M.push(defaultVariables(theFirst));
             }
             if (temp.numerator > 1n) {
                 mn = MathML.node("mn", textNode(temp.numerator));
-                math.push(mn);
-                math = math.push(defaultVariables(theFirst));
+                M.push(mn);
+                M.push(defaultVariables(theFirst));
             }
             if (temp.numerator < -1n) {
                 minus = MathML.node("mo", [textNode("-")]);
-                math.push(minus);
-                mn = MathML.node("mn", textNode(temp.numerator));
-                math.push(mn);
-                math = math.push(defaultVariables(theFirst));
+                M.push(minus);
+                mn = MathML.node("mn", textNode(-temp.numerator));
+                M.push(mn);
+                M.push(defaultVariables(theFirst));
             }
         } else {
-            math = math.concat(temp.toMathML());
+            M = M.concat(temp.toMathML());
         }
         for (var i = theFirst + 1; i < t.coefficients.length; i++) {
             temp = t.coefficients[i];
             if (temp.numerator !== 0n) {
                 if (temp.numerator > 0n) {
                     plus = MathML.node("mo", textNode("+"));
-                    math.push(plus);
+                    M.push(plus);
                     if (temp.numerator !== 1n || temp.denominator !== 1n) {
-                        math = math.concat(temp.toMathML());
+                        M = M.concat(temp.toMathML());
                     }
-                    math.push(defaultVariables(i));
+                    M.push(defaultVariables(i));
                 } else {
                     minus = MathML.node("mo", textNode("-"));
-                    math.push(minus);
+                    M.push(minus);
                     if (temp.numerator !== -1n || temp.denominator !== 1n) {
-                        math = math.concat(oppositeFraction(temp).toMathML());
+                        M = M.concat(oppositeFraction(temp).toMathML());
                     }
-                    math.push(defaultVariables(i));
+                    M.push(defaultVariables(i));
                 }
             }
         }
-        return math;
+        return M;
     };
     return t;
 }
@@ -262,21 +265,23 @@ function LinearProgrammingProblem(objective, constraints, integerVariables = [])
         ge_zero.push(MathML.node("mn", textNode("0")));
         ge_zero = MathML.node("mtr", MathML.node("mtd", MathML.node("mrow", ge_zero)));
         c = c.concat(ge_zero);
-        integerVariables.sort();
-        var b = true;
-        var integers = [];
-        for (i = 0; i < integerVariables.length; i++) {
-            if (b) {
-                b = false;
-            } else {
-                integers.push(MathML.node("mo", textNode(",")));
-            }
-            integers = integers.concat(defaultVariables(integerVariables[i]));
+		if (integerVariables.length > 0) {
+			integerVariables.sort();
+			var b = true;
+			var integers = [];
+			for (i = 0; i < integerVariables.length; i++) {
+				if (b) {
+					b = false;
+				} else {
+					integers.push(MathML.node("mo", textNode(",")));
+				}
+				integers = integers.concat(defaultVariables(integerVariables[i]));
+			}
+			integers.push(MathML.node("mo", textNode("\u2208"))); // &isin;
+			integers.push(MathML.node("mi", textNode("\u2124"), {"mathvariant": "normal"})); // &integers;
+			integers = MathML.node("mtr", MathML.node("mtd", MathML.node("mrow", integers)));
+			c = c.concat(integers);
         }
-        integers.push(MathML.node("mo", textNode("\u2208"))); // &isin;
-        integers.push(MathML.node("mi", textNode("\u2124"), {"mathvariant": "normal"})); // &integers;
-        integers = MathML.node("mtr", MathML.node("mtd", MathML.node("mrow", integers)));
-        c = c.concat(integers);
         c = MathML.node("mtable", c, {"columnalign": "center"});
         var left = MathML.node("mo", textNode("{"), {"fence": "true", "form": "prefix"});
         var right = MathML.node("mo", textNode(""), {"fence": "true", "form": "postfix"});
@@ -284,3 +289,84 @@ function LinearProgrammingProblem(objective, constraints, integerVariables = [])
     };
     return t;
 }
+
+function SimplexTable(A, B, D, d, basicVariables, iteration = 0) {
+    var t = {};
+    t.A = A;
+    t.B = B;
+    t.D = D;
+    t.d = d;
+    t.basicVariables = basicVariables;
+    t.iteration = iteration;
+    t.toMathML = function() {
+		var i, j, mtd;
+		var theFirstRow = [];
+		var mi = MathML.node("mi", textNode("T"));
+		var mn = MathML.node("mn", textNode(this.iteration.toString()));
+		var msup = MathML.node("msup", [mi, mn]);
+		var cell_T = MathML.node("mtd", msup, {"style": "border-right: solid; border-bottom: solid;"});
+		theFirstRow.push(cell_T);
+		mi = MathML.node("mi", textNode("f"));
+		var cell_f = MathML.node("mtd", mi, {"style": "border-right: solid; border-bottom: solid;"});
+		theFirstRow.push(cell_f);
+		for (i = 0; i < A[0].length; i++) {
+			var cell = MathML.node("mtd", defaultVariables(i), {"style": "border-bottom: solid"});
+			theFirstRow.push(cell);
+		}
+		mi = MathML.node("mi", textNode("b"));
+		var cell_b = MathML.node("mtd", mi, {"style": "border-bottom: solid; border-left: solid;"});
+		theFirstRow.push(cell_b);
+		theFirstRow = MathML.node("mtr", theFirstRow);		
+		var rows = [theFirstRow];
+		for (i = 0; i < A.length; i++) {
+			var t = defaultVariables(basicVariables[i]);
+			var cell_basicVariable = MathML.node("mtd", t, {"style": "border-right: solid;"});
+			var thisRow = [cell_basicVariable];
+			var justZero = MathML.node("mn", textNode(0));
+			justZero = MathML.node("mtd", justZero, {"style": "border-right: solid;"});
+			thisRow.push(justZero);
+			for (j = 0; j < A[i].length; j++) {
+				mn = MathML.node("mn", A[i][j].toMathML());
+				mtd = MathML.node("mtd", mn);
+				thisRow.push(mtd);
+			}
+			mn = MathML.node("mn", B[i].toMathML());
+			mtd = MathML.node("mtd", mn, {"style": "border-left: solid;"});
+			thisRow.push(mtd);
+			thisRow = MathML.node("mtr", thisRow);
+			rows.push(thisRow);
+		}
+		var theLastRow = [];
+		var justF = MathML.node("mi", textNode("f"));
+		justF = MathML.node("mtd", justF, {"style": "border-right: solid; border-top: solid;"});
+		theLastRow.push(justF);
+		var justOne = MathML.node("mn", textNode("1"));
+		justOne = MathML.node("mtd", justOne, {"style": "border-right: solid; border-top: solid;"});
+		theLastRow.push(justOne);
+		for (j = 0; j < A[0].length; j++) {
+		    var currentCell = MathML.node("mtd", D[j].toMathML(), {"style": "border-top: solid"});
+			theLastRow.push(currentCell);
+		}
+		var theLastCell = MathML.node("mtd", d.toMathML(), {"style": "border-top: solid; border-left: solid;"});
+		theLastRow.push(theLastCell);
+		theLastRow = MathML.node("mtr", theLastRow);
+		rows.push(theLastRow);
+		var center = [];
+		for (i = 0; i < A[0].length + 3; i++) {
+			center.push("center");
+		}
+		center = center.join(" ");
+		return MathML.node("mtable", rows, {"columnalign": center});
+    };
+	return t;
+}
+
+/*
+  <mtable columnalign="center center center center center center center center">
+    <mtr>
+      <mtd >
+        <mn>0</mn>
+      </mtd>
+    </mtr>
+  </mtable>
+*/
