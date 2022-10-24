@@ -306,9 +306,6 @@ function SimplexTable(A, B, D, d, basicVariables, iteration = 0) {
 		var msup = MathML.node("msup", [mi, mn]);
 		var cell_T = MathML.node("mtd", msup, {"style": "border-right: solid; border-bottom: solid;"});
 		theFirstRow.push(cell_T);
-		mi = MathML.node("mi", textNode("f"));
-		var cell_f = MathML.node("mtd", mi, {"style": "border-right: solid; border-bottom: solid;"});
-		theFirstRow.push(cell_f);
 		for (i = 0; i < A[0].length; i++) {
 			var cell = MathML.node("mtd", defaultVariables(i), {"style": "border-bottom: solid"});
 			theFirstRow.push(cell);
@@ -322,9 +319,6 @@ function SimplexTable(A, B, D, d, basicVariables, iteration = 0) {
 			var t = defaultVariables(basicVariables[i]);
 			var cell_basicVariable = MathML.node("mtd", t, {"style": "border-right: solid;"});
 			var thisRow = [cell_basicVariable];
-			var justZero = MathML.node("mn", textNode(0));
-			justZero = MathML.node("mtd", justZero, {"style": "border-right: solid;"});
-			thisRow.push(justZero);
 			for (j = 0; j < A[i].length; j++) {
 				mtd = MathML.node("mtd", A[i][j].toMathML());
 				thisRow.push(mtd);
@@ -338,9 +332,6 @@ function SimplexTable(A, B, D, d, basicVariables, iteration = 0) {
 		var justF = MathML.node("mi", textNode("f"));
 		justF = MathML.node("mtd", justF, {"style": "border-right: solid; border-top: solid;"});
 		theLastRow.push(justF);
-		var justOne = MathML.node("mn", textNode("1"));
-		justOne = MathML.node("mtd", justOne, {"style": "border-right: solid; border-top: solid;"});
-		theLastRow.push(justOne);
 		for (j = 0; j < A[0].length; j++) {
 		    var currentCell = MathML.node("mtd", D[j].toMathML(), {"style": "border-top: solid"});
 			theLastRow.push(currentCell);
@@ -356,15 +347,6 @@ function SimplexTable(A, B, D, d, basicVariables, iteration = 0) {
 		center = center.join(" ");
 		return MathML.node("mtable", rows, {"columnalign": center});
     };
+	
 	return t;
 }
-
-/*
-  <mtable columnalign="center center center center center center center center">
-    <mtr>
-      <mtd >
-        <mn>0</mn>
-      </mtd>
-    </mtr>
-  </mtable>
-*/
