@@ -326,12 +326,10 @@ function SimplexTable(A, B, D, d, basicVariables, iteration = 0) {
 			justZero = MathML.node("mtd", justZero, {"style": "border-right: solid;"});
 			thisRow.push(justZero);
 			for (j = 0; j < A[i].length; j++) {
-				mn = MathML.node("mn", A[i][j].toMathML());
-				mtd = MathML.node("mtd", mn);
+				mtd = MathML.node("mtd", A[i][j].toMathML());
 				thisRow.push(mtd);
 			}
-			mn = MathML.node("mn", B[i].toMathML());
-			mtd = MathML.node("mtd", mn, {"style": "border-left: solid;"});
+			mtd = MathML.node("mtd", B[i].toMathML(), {"style": "border-left: solid;"});
 			thisRow.push(mtd);
 			thisRow = MathML.node("mtr", thisRow);
 			rows.push(thisRow);
