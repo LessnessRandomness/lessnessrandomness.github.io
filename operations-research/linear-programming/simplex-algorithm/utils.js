@@ -1,6 +1,10 @@
 /* jshint esversion: 11 */
 "use strict";
 
+var randomChoice = function(a) {
+    return a[Math.floor(Math.random() * a.length)];
+};
+
 var textNode = function(x) {
     return document.createTextNode(x.toString());
 };
@@ -415,12 +419,35 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, iteration = 0) {
         }
         return false;
     };
+	t.copy = function() {
+		var i, j;
+		var tempA = [];
+		for (i = 0; i < t.A.length; i++) {
+			tempA.push([]);
+			for (j = 0; j < t.A[i].length; j++) {
+				tempA[i].push(t.A[i][j]);
+			}
+		}
+		var tempB = [];
+		for (i = 0; i < t.B.length; i++) {
+			tempB.push(t.B[i]);
+		}
+		var tempD = [];
+		for (i = 0; i < t.D.length; i++) {
+			tempD.push(t.D[i]);
+		}
+		var tempBasicVariables = [];
+		for (i = 0; i < t.basicVariables.length; i++) {
+			tempBasicVariables.push(t.basicVariables[i]);
+		}
+		return LPP.SimplexTable(tempA, tempB, tempD, t.d, tempBasicVariables, t.iteration);
+	};
     t.allPossiblePivots = function() {
         var temp = [];
         for (var i = 0; i < A.length; i++) {
             for (var j = 0; j < A[0].length; j++) {
                 if (t.possiblePivot(i, j)) {
-                    temp.push([i,j]);
+                    temp.push([i, j]);
                 }
             }
         }
@@ -452,9 +479,20 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, iteration = 0) {
             t.D[j] = substractFractions(t.D[j], multiplyFractions(temp, t.A[row][j]));
         }
         t.d = substractFractions(t.d, multiplyFractions(temp, t.B[row]));
-		t.basicVariables[row] = col;
+        t.basicVariables[row] = col;
+        t.iteration += 1;
     };
-    t.toMathML = function() {
+    t.SolutionSkeleton = function() {
+		var temp = t.copy();
+        var listOfPivots = [];
+        while (temp.allPossiblePivots().length > 0) {
+            var pivot = randomChoice(temp.allPossiblePivots());
+            listOfPivots.push(pivot);
+            temp.moveToNextIteration(pivot[0], pivot[1]);
+        }
+        return listOfPivots;
+    };
+    t.toMathML = function(row = undefined, col = undefined) {
         var i, j, mtd;
         var theFirstRow = [];
         var mi = MathML.node("mi", textNode("T"));
@@ -463,7 +501,11 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, iteration = 0) {
         var cell_T = MathML.node("mtd", msup, {"style": "border-right: solid; border-bottom: solid;"});
         theFirstRow.push(cell_T);
         for (i = 0; i < this.A[0].length; i++) {
-            var cell = MathML.node("mtd", defaultVariables(i), {"style": "border-bottom: solid"});
+			if (i === col) {
+				var cell = MathML.node("mtd", defaultVariables(i), {"style": "border-bottom: solid; background-color: pink;"});
+			} else {
+				var cell = MathML.node("mtd", defaultVariables(i), {"style": "border-bottom: solid;"});
+			};
             theFirstRow.push(cell);
         }
         mi = MathML.node("mi", textNode("b"));
@@ -473,13 +515,25 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, iteration = 0) {
         var rows = [theFirstRow];
         for (i = 0; i < this.A.length; i++) {
             var t = defaultVariables(basicVariables[i]);
-            var cell_basicVariable = MathML.node("mtd", t, {"style": "border-right: solid;"});
+			if (i === row) {
+				var cell_basicVariable = MathML.node("mtd", t, {"style": "border-right: solid; background-color: pink;"});
+			} else {
+				var cell_basicVariable = MathML.node("mtd", t, {"style": "border-right: solid;"});
+			}
             var thisRow = [cell_basicVariable];
             for (j = 0; j < this.A[i].length; j++) {
-                mtd = MathML.node("mtd", this.A[i][j].toMathML());
+				if (j === col || i === row) {
+					mtd = MathML.node("mtd", this.A[i][j].toMathML(), {"style": "background-color: pink;"});
+				} else {
+					mtd = MathML.node("mtd", this.A[i][j].toMathML());
+				}
                 thisRow.push(mtd);
             }
-            mtd = MathML.node("mtd", this.B[i].toMathML(), {"style": "border-left: solid;"});
+			if (i === row) {
+				mtd = MathML.node("mtd", this.B[i].toMathML(), {"style": "border-left: solid; background-color: pink;"});
+			} else {
+				mtd = MathML.node("mtd", this.B[i].toMathML(), {"style": "border-left: solid;"});
+			}
             thisRow.push(mtd);
             thisRow = MathML.node("mtr", thisRow);
             rows.push(thisRow);
@@ -489,7 +543,11 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, iteration = 0) {
         justF = MathML.node("mtd", justF, {"style": "border-right: solid; border-top: solid;"});
         theLastRow.push(justF);
         for (j = 0; j < this.A[0].length; j++) {
-            var currentCell = MathML.node("mtd", this.D[j].toMathML(), {"style": "border-top: solid"});
+            if (j === col) {
+				var currentCell = MathML.node("mtd", this.D[j].toMathML(), {"style": "border-top: solid; background-color: pink;"});
+			} else {
+				var currentCell = MathML.node("mtd", this.D[j].toMathML(), {"style": "border-top: solid"});
+			}
             theLastRow.push(currentCell);
         }
         var theLastCell = MathML.node("mtd", this.d.toMathML(), {"style": "border-top: solid; border-left: solid;"});
@@ -502,6 +560,37 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, iteration = 0) {
         }
         center = center.join(" ");
         return MathML.node("mtable", rows, {"columnalign": center});
+    };
+    t.ExplainedSolution = function(id) {
+        var skeleton = t.SolutionSkeleton();
+		var temp = t.copy();
+		var place = document.getElementById(id);
+        for (var i = 0; i < skeleton.length; i++) {
+			var row = skeleton[i][0];
+			var col = skeleton[i][1];
+			var start = MathML.done(temp.toMathML(row, col));
+			var p = document.createElement("p");
+			p.appendChild(start);
+			place.appendChild(p);
+			p = document.createElement("p");
+			var mi = MathML.node("mi", textNode("D"));
+			var mn = MathML.node("mn", textNode(col + 1));
+			var msub = MathML.node("msub", [mi, mn]);
+			var mo = MathML.node("mo", textNode("<"));
+			mn = MathML.node("mn", textNode(0));
+			p.appendChild(textNode("Chosen pivot column is " + (col + 1).toString() + ", because "));
+			p.appendChild(MathML.done([[msub, mo, mn]]));
+			p.appendChild(textNode(". "));
+			p.appendChild(textNode("Chosen pivot row is " + (row + 1).toString() + "."));
+			place.appendChild(p);
+			temp.moveToNextIteration(row, col);
+        }
+		p = document.createElement("p");
+		p.appendChild(MathML.done(temp.toMathML()));
+		place.appendChild(p);
+		p = document.createElement("p");
+		p.appendChild(textNode("This is the final iteration."));
+		place.appendChild(p);
     };
     return t;
 };
