@@ -10,30 +10,37 @@
         <button></button>
         <div id="solution"></div>
         <script>
-			var linexp = LinearExpression([Fraction(3), Fraction(1)]);
-            var objective = ObjectiveFunction(linexp);
-			var constraints = []
-			var leftSide = LinearExpression([Fraction(3), Fraction(2)]);
-			constraints.push(LinearConstraint(leftSide, Fraction(18)));
-			leftSide = LinearExpression([Fraction(-3), Fraction(1)]);
-			constraints.push(LinearConstraint(leftSide, Fraction(6)));
-			leftSide = LinearExpression([Fraction(4), Fraction(-3)]);
-			constraints.push(LinearConstraint(leftSide, Fraction(12)));
-			var LPP = LinearProgrammingProblem(objective, constraints);
-			document.getElementById("exercise").appendChild(MathML.done(LPP.toMathML()));
-			
-			var A = [[Fraction(3), Fraction(2), Fraction(1), Fraction(0), Fraction(0)],
-			         [Fraction(-3), Fraction(1), Fraction(0), Fraction(1), Fraction(0)],
-					 [Fraction(4), Fraction(-3), Fraction(0), Fraction(0), Fraction(1)]];
-			var B = [Fraction(18), Fraction(6), Fraction(12)];
-			var D = [Fraction(-3), Fraction(-1), Fraction(0), Fraction(0), Fraction(0)];
-			var d = Fraction(0);
-			var bV = [2, 3, 4];
-			var it = 0;
-			var simplex = SimplexTable(A, B, D, d, bV, it);
-			document.getElementById("solution").appendChild(MathML.done(simplex.toMathML()));
-        </script>
-		
-		
+            var objectiveVector = [Fraction(3), Fraction(1)];
+            var constraintMatrix = [[Fraction(3), Fraction(2)],
+                                    [Fraction(-3), Fraction(1)],
+                                    [Fraction(4), Fraction(-3)]];
+            var bVector = [Fraction(18), Fraction(6), Fraction(12)];
+            var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
+            document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
+            
+            var A = [[Fraction(3), Fraction(2), Fraction(1), Fraction(0), Fraction(0)],
+                     [Fraction(-3), Fraction(1), Fraction(0), Fraction(1), Fraction(0)],
+                     [Fraction(4), Fraction(-3), Fraction(0), Fraction(0), Fraction(1)]];
+            var B = [Fraction(18), Fraction(6), Fraction(12)];
+            var D = [Fraction(-3), Fraction(-1), Fraction(0), Fraction(0), Fraction(0)];
+            var d = Fraction(0);
+            var bV = [2, 3, 4];
+            var it = 0;
+            var LPP_simplex = LPP.SimplexTable(A, B, D, d, bV, it);
+            document.getElementById("solution").appendChild(MathML.done(LPP_simplex.toMathML()));
+            
+            var LPP_canonical = LPP.CanonicalForm(objectiveVector, constraintMatrix, bVector, [0,1]);
+            //document.getElementById("solution").appendChild(MathML.done(LPP_canonical.toMathML()));
+            
+            for (var i = 0; i < LPP_simplex.allPossiblePivots().length; i++) {
+                alert(LPP_simplex.allPossiblePivots()[i].toString()); 
+            }
+            
+            LPP_simplex.moveToNextIteration(2,0);
+            document.getElementById("solution").appendChild(MathML.done(LPP_simplex.toMathML()));
+            
+            LPP_simplex.moveToNextIteration(0,1);
+            document.getElementById("solution").appendChild(MathML.done(LPP_simplex.toMathML()));
+        </script>       
     </body>
 </html>
