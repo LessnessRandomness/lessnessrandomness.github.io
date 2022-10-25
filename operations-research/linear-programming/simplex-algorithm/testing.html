@@ -7,7 +7,7 @@
     </head>
     <body>
         <div id="exercise"></div>
-        <button></button>
+        <!-- <button>The button</button> -->
         <div id="solution"></div>
         <script>
             <!-- var objectiveVector = [Fraction(3), Fraction(1)]; -->
@@ -25,8 +25,9 @@
             var D = [Fraction(-3), Fraction(-1), Fraction(0), Fraction(0), Fraction(0)];
             var d = Fraction(0);
             var bV = [2, 3, 4];
+			var sV = [0, 1];
             var it = 0;
-            var LPP_simplex = LPP.SimplexTable(A, B, D, d, bV, it);
+            var LPP_simplex = LPP.SimplexTable(A, B, D, d, bV, sV, it);
             LPP_simplex.ExplainedSolution("solution");
         </script>       
     </body>
