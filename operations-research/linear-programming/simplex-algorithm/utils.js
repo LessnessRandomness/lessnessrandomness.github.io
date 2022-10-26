@@ -91,10 +91,10 @@ function Fraction(numerator, denominator = 1) {
     f.toMathML = function() {
         var mn, mo, minus, a, b, t;
         if (f.numerator === 0n) {
-            return MathML.node("mn", textNode(0n));
+            return [MathML.node("mn", textNode(0n))];
         }
         if (f.denominator === 1n && f.numerator > 0n) {
-            return MathML.node("mn", textNode(f.numerator));
+            return [MathML.node("mn", textNode(f.numerator))];
         }
         if (f.denominator === 1n && f.numerator < 0n) {
             mn = MathML.node("mn", textNode(-f.numerator));
@@ -104,7 +104,7 @@ function Fraction(numerator, denominator = 1) {
         if (f.denominator !== 1n && f.numerator > 0n) {
             a = MathML.node("mn", textNode(f.numerator));
             b = MathML.node("mn", textNode(f.denominator));
-            return MathML.node("mfrac", [a, b]);
+            return [MathML.node("mfrac", [a, b])];
         }
         if (f.denominator !== 1n && f.numerator < 0n) {
             a = MathML.node("mn", textNode(-f.numerator));
@@ -590,14 +590,75 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
 			place.appendChild(p);
 			p = document.createElement("p");
 			var mi = MathML.node("mi", textNode("D"));
-			var mn = MathML.node("mn", textNode(col + 1));
-			var msub = MathML.node("msub", [mi, mn]);
-			var mo = MathML.node("mo", textNode("<"));
-			mn = MathML.node("mn", textNode(0));
+			var mn1 = MathML.node("mn", textNode(col + 1));
+			var msub = MathML.node("msub", [mi, mn1]);
+			var mo1 = MathML.node("mo", textNode("="));
+			var mo2 = MathML.node("mo", textNode("<"));
+			var mn2 = MathML.node("mn", textNode(0));
+			var L = [msub, mo1];
+			L = L.concat(temp.D[col].toMathML());
+			L = L.concat([mo2, mn2]);
 			p.appendChild(textNode("Chosen pivot column is " + (col + 1).toString() + ", because "));
-			p.appendChild(MathML.done([[msub, mo, mn]]));
+			p.appendChild(MathML.done([L]));
 			p.appendChild(textNode(". "));
-			p.appendChild(textNode("Chosen pivot row is " + (row + 1).toString() + "."));
+			p.appendChild(textNode("Chosen pivot row is " + (row + 1).toString() + ", because "));
+			var rows = [];
+			for (var k = 0; k < temp.B.length; k++) {
+				if (ltFractions(Fraction(0), temp.A[k][col])) {
+					rows.push(k);
+				}
+			}
+			if (rows.length > 1) {
+				var L0 = [];
+				for (var k = 0; k < rows.length; k++) {
+					var L = []
+					mi = MathML.node("mi", textNode("b"));
+					mn = MathML.node("mn", textNode(rows[k]+1));
+					var b_mathML = MathML.node("msub", [mi, mn]);
+					mi = MathML.node("mi", textNode("A"));
+					var first_index = MathML.node("mn", textNode(rows[k]+1));
+					var comma = MathML.node("mo", textNode(","));
+					var second_index = MathML.node("mn", textNode(col+1));
+					var A_mathML = MathML.node("msub", [mi, MathML.row([first_index, comma, second_index])]);
+					var b_div_A = MathML.node("mfrac", [b_mathML, A_mathML]);
+					var eq_sign = MathML.node("mo", textNode("="));
+					L = [b_div_A, eq_sign];
+					var num = temp.B[rows[k]].toMathML();
+					num = MathML.row(num);
+					var den = temp.A[rows[k]][col].toMathML();
+					den = MathML.row(den);
+					var b_div_A_frac = MathML.node("mfrac", [num, den]);
+					L.push(b_div_A_frac);
+					L.push(MathML.node("mo", textNode("=")));
+					L = L.concat(divideFractions(temp.B[rows[k]], temp.A[rows[k]][col]).toMathML());
+					p.appendChild(MathML.done([L]));
+					if (k < rows.length - 1) {
+						p.appendChild(textNode(", "));
+					}
+					p.appendChild(textNode(" and "));
+					L0 = L0.concat(divideFractions(temp.B[rows[k]], temp.A[rows[k]][col]).toMathML());
+					if (k < rows.length - 1) {
+						L0.push(MathML.node("mo", textNode(",")));
+					}
+				}
+			    var mfenced = MathML.node("mfenced", MathML.row(L0), {"open": "[", "close": "]"});
+			    var eq = MathML.node("mo", textNode("="));
+				var min = MathML.node("mi", textNode("min"));
+			    
+				// ...
+				// <math display = 'block' xmlns='http://www.w3.org/1998/Math/MathML'>
+  // <mrow>
+    // <mfenced open = '(' close = ')'>
+      // <mrow></mrow>
+    // </mfenced>
+  // </mrow>
+// </math>
+
+				p.appendChild(MathML.done([[min, mfenced, eq]]));
+				p.appendChild(textNode("."));
+			} else {
+				p.appendChild(textNode("there is only one row with strictly positive value (in the column)."));
+			}
 			place.appendChild(p);
 			temp.moveToNextIteration(row, col);
         }
@@ -614,16 +675,20 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
 			place.appendChild(p);
 			for (i = 0; i < temp.startVariables.length; i++) {
 				mi = MathML.node("mi", textNode("x"));
-				mn = MathML.node("mn", textNode(temp.startVariables[i] + 1));
+				var mn = MathML.node("mn", textNode(temp.startVariables[i] + 1));
 				msub = MathML.node("msub", [mi, mn]);
-				mo = MathML.node("mo", textNode("="));
-				var x_has_value = MathML.done([[msub, mo, plan[i].toMathML()]]);
+				var mo = MathML.node("mo", textNode("="));
+				var x_has_value = [msub, mo];
+				x_has_value = x_has_value.concat(plan[i].toMathML());
+				x_has_value = MathML.done([x_has_value]);
 				p.appendChild(x_has_value);
 				p.appendChild(textNode(", "));
 			}
 			mi = MathML.node("mi", textNode("f"));
 			mo = MathML.node("mo", textNode("="));
-			var f_has_value = MathML.done([[mi, mo, temp.d.toMathML()]]);
+			var f_has_value = [mi, mo];
+			f_has_value = f_has_value.concat(temp.d.toMathML());
+			f_has_value = MathML.done([f_has_value]);
 			p.appendChild(f_has_value);
 			p.appendChild(textNode("."));
 		}
