@@ -140,7 +140,18 @@ function ltFractions(f1, f2) {
 function leFractions(f1, f2) {
 	return (substractFractions(f1, f2).numerator <= 0n);
 }
-
+function minimumFraction(fs) {
+	if (fs.length === 0) {
+		throw("Empty array, can't find minimum value");
+	}
+	var m = fs[0];
+	for (var i = 1; i < fs.length; i++) {
+		if (ltFractions(fs[i], m)) {
+			m = fs[i];
+		}
+	}
+	return m;
+}
 
 function defaultVariables(n) {
     var mi, mn, msub;
@@ -611,7 +622,8 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
 			if (rows.length > 1) {
 				var L0 = [];
 				for (var k = 0; k < rows.length; k++) {
-					var L = []
+					var L = [];
+					var fs = [];
 					mi = MathML.node("mi", textNode("b"));
 					mn = MathML.node("mn", textNode(rows[k]+1));
 					var b_mathML = MathML.node("msub", [mi, mn]);
@@ -630,31 +642,32 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
 					var b_div_A_frac = MathML.node("mfrac", [num, den]);
 					L.push(b_div_A_frac);
 					L.push(MathML.node("mo", textNode("=")));
-					L = L.concat(divideFractions(temp.B[rows[k]], temp.A[rows[k]][col]).toMathML());
+					var f = divideFractions(temp.B[rows[k]], temp.A[rows[k]][col]);
+					fs.push(f);
+					L = L.concat(f.toMathML());
 					p.appendChild(MathML.done([L]));
 					if (k < rows.length - 1) {
 						p.appendChild(textNode(", "));
 					}
 					p.appendChild(textNode(" and "));
-					L0 = L0.concat(divideFractions(temp.B[rows[k]], temp.A[rows[k]][col]).toMathML());
+					L0 = L0.concat(f.toMathML());
 					if (k < rows.length - 1) {
 						L0.push(MathML.node("mo", textNode(",")));
 					}
 				}
-			    var mfenced = MathML.node("mfenced", MathML.row(L0), {"open": "[", "close": "]"});
-			    var eq = MathML.node("mo", textNode("="));
+				var leftBracket = MathML.node("mo", textNode("("), {"fence": "true", "form": "prefix"});
+				var rightBracket = MathML.node("mo", textNode(")"), {"fence": "true", "form": "postfix"});
+			    var brackets = [leftBracket];
+				brackets = brackets.concat(MathML.row(L0));
+				brackets.push(rightBracket);
 				var min = MathML.node("mi", textNode("min"));
-			    
-				// ...
-				// <math display = 'block' xmlns='http://www.w3.org/1998/Math/MathML'>
-  // <mrow>
-    // <mfenced open = '(' close = ')'>
-      // <mrow></mrow>
-    // </mfenced>
-  // </mrow>
-// </math>
-
-				p.appendChild(MathML.done([[min, mfenced, eq]]));
+				var eq = MathML.node("mo", textNode("="));
+				var minimumValue = minimumFraction(fs).toMathML();
+				var expression = [min];
+				expression = expression.concat(brackets);
+				expression.push(eq);
+				expression = expression.concat(minimumValue);
+				p.appendChild(MathML.done([expression]));
 				p.appendChild(textNode("."));
 			} else {
 				p.appendChild(textNode("there is only one row with strictly positive value (in the column)."));
