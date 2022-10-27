@@ -10,24 +10,24 @@
         <!-- <button></button> -->
         <div id="solution"></div>
         <script>
-            <!-- var objectiveVector = [Fraction(3), Fraction(1)]; -->
-            <!-- var constraintMatrix = [[Fraction(3), Fraction(2)], -->
-                                    <!-- [Fraction(-3), Fraction(1)], -->
-                                    <!-- [Fraction(4), Fraction(-3)]]; -->
-            <!-- var bVector = [Fraction(18), Fraction(6), Fraction(12)]; -->
-            <!-- var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector); -->
-            <!-- document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML())); -->
+            var objectiveVector = [Fraction(3), Fraction(1)];
+            var constraintMatrix = [[Fraction(3), Fraction(2)],
+                                    [Fraction(-3), Fraction(1)],
+                                    [Fraction(4), Fraction(-3)]];
+            var bVector = [Fraction(18), Fraction(6), Fraction(12)];
+            var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
+            document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
             
-            var A = [[Fraction(3), Fraction(2), Fraction(1), Fraction(0), Fraction(0)],
-                     [Fraction(-3), Fraction(1), Fraction(0), Fraction(1), Fraction(0)],
-                     [Fraction(4), Fraction(-3), Fraction(0), Fraction(0), Fraction(1)]];
-            var B = [Fraction(18), Fraction(6), Fraction(12)];
-            var D = [Fraction(-3), Fraction(-1), Fraction(0), Fraction(0), Fraction(0)];
-            var d = Fraction(0);
-            var bV = [2, 3, 4];
-			var sV = [0, 1];
-            var it = 0;
-            var LPP_simplex = LPP.SimplexTable(A, B, D, d, bV, sV, it);
+            <!-- var A = [[Fraction(3), Fraction(2), Fraction(1), Fraction(0), Fraction(0)], -->
+                     <!-- [Fraction(-3), Fraction(1), Fraction(0), Fraction(1), Fraction(0)], -->
+                     <!-- [Fraction(4), Fraction(-3), Fraction(0), Fraction(0), Fraction(1)]]; -->
+            <!-- var B = [Fraction(18), Fraction(6), Fraction(12)]; -->
+            <!-- var D = [Fraction(-3), Fraction(-1), Fraction(0), Fraction(0), Fraction(0)]; -->
+            <!-- var d = Fraction(0); -->
+            <!-- var bV = [2, 3, 4]; -->
+			<!-- var sV = [0, 1]; -->
+            <!-- var it = 0; -->
+            var LPP_simplex = LPP_normal.toSimplexTable();
             LPP_simplex.ExplainedSolution("solution");
         </script>       
     </body>
