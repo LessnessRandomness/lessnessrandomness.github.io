@@ -148,19 +148,19 @@ function addFractions(f1, f2) {
     return Fraction(f1.numerator * f2.denominator + f2.numerator * f1.denominator, f1.denominator * f2.denominator);
 }
 function substractFractions(f1, f2) {
-    return addFractions(f1, oppositeFraction(f2));
+    return addFractions(f1.numerator * f2.denominator - f2.numerator * f1.denominator, f1.denominator * f2.denominator);
 }
 function multiplyFractions(f1, f2) {
     return Fraction(f1.numerator * f2.numerator, f1.denominator * f2.denominator);
 }
 function divideFractions(f1, f2) {
-    return multiplyFractions(f1, invertedFraction(f2));
+    return multiplyFractions(f1.numerator * f2.denominator, f1.denominator * f2.numerator);
 }
 function ltFractions(f1, f2) {
-    return (substractFractions(f1, f2).numerator < 0n);
+    return (f1.numerator * f2.denominator - f2.numerator * f1.denominator < 0n);
 }
 function leFractions(f1, f2) {
-    return (substractFractions(f1, f2).numerator <= 0n);
+    return (f1.numerator * f2.denominator - f2.numerator * f1.denominator <= 0n);
 }
 function minimumFraction(fs) {
     if (fs.length === 0) {
@@ -550,10 +550,9 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
                 }
             }
             if (rows.length > 1) {
-                var L0 = [], fs;
+                var L0 = [], fs = [];
                 for (k = 0; k < rows.length; k++) {
                     L = [];
-                    fs = [];
                     mi = MathML.node("mi", textNode("b"));
                     mn = MathML.node("mn", textNode(rows[k]+1));
                     var b_mathML = MathML.node("msub", [mi, mn]);
