@@ -330,9 +330,6 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
     t.startVariables = startVariables;
     t.basicVariables = basicVariables;
     t.iteration = iteration;
-    alert("t.A is " + JSON.stringify(t.A));
-    alert("t.B is " + JSON.stringify(t.B));
-    alert("t.D is " + JSON.stringify(t.D));
     t.copy = function() {
         var i, j;
         var tempA = [];
@@ -511,7 +508,6 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
     t.ExplainedSolution = function(id) {
         var p, mi, mn, msub;
         var temp = t.copy();
-        alert(temp.toMathML().outerHTML);
         var skeleton = temp.SolutionSkeleton(); 
         var place = document.getElementById(id);
         for (var i = 0; i < skeleton[0].length; i++) {
