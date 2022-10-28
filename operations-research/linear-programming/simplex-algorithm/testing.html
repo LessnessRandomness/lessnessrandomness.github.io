@@ -7,28 +7,30 @@
     </head>
     <body>
         <div id="exercise"></div>
-        <!-- <button></button> -->
-        <div id="solution"></div>
+        <button id="button">Show solution!</button>
+        <div id="solution" style="display:none;"></div>
         <script>
-            var objectiveVector = [Fraction(3), Fraction(1)];
-            var constraintMatrix = [[Fraction(3), Fraction(2)],
-                                    [Fraction(-3), Fraction(1)],
-                                    [Fraction(4), Fraction(-3)]];
-            var bVector = [Fraction(18), Fraction(6), Fraction(12)];
+            var objectiveVector = [Fraction(randomInt(1,9)), Fraction(randomInt(1,9))];
+            var constraintMatrix = [[Fraction(randomInt(1,9)), Fraction(randomInt(1,9))],
+                                    [Fraction(randomInt(1,9)), Fraction(-randomInt(1,9))],
+                                    [Fraction(-randomInt(1,9)), Fraction(randomInt(1,9))]];
+            var bVector = [Fraction(randomInt(10,19)), Fraction(randomInt(10,19)), Fraction(randomInt(10,19))];
             var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
             document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
-            
-            <!-- var A = [[Fraction(3), Fraction(2), Fraction(1), Fraction(0), Fraction(0)], -->
-                     <!-- [Fraction(-3), Fraction(1), Fraction(0), Fraction(1), Fraction(0)], -->
-                     <!-- [Fraction(4), Fraction(-3), Fraction(0), Fraction(0), Fraction(1)]]; -->
-            <!-- var B = [Fraction(18), Fraction(6), Fraction(12)]; -->
-            <!-- var D = [Fraction(-3), Fraction(-1), Fraction(0), Fraction(0), Fraction(0)]; -->
-            <!-- var d = Fraction(0); -->
-            <!-- var bV = [2, 3, 4]; -->
-			<!-- var sV = [0, 1]; -->
-            <!-- var it = 0; -->
+            var button = document.getElementById("button");
+            button.onclick = function() {
+                var solution = document.getElementById("solution");
+                button.removeChild(button.firstChild);
+                if (solution.style.display === "none") {
+                    solution.style.display = "block";
+                    button.appendChild(textNode("Hide solution!"));
+                } else {
+                    solution.style.display = "none";
+                    button.appendChild(textNode("Show solution!"));
+                }
+            };
             var LPP_simplex = LPP_normal.toSimplexTable();
-            LPP_simplex.ExplainedSolution("solution");
+            LPP_simplex.ExplainedSolution("solution");  
         </script>       
     </body>
 </html>

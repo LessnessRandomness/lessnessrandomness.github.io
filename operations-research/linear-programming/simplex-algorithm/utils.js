@@ -5,10 +5,22 @@ BigInt.prototype.toJSON = function() {
     return this.toString();
 };
 
-// Chooses random element of list
+// Randomness stuff
 
 var randomChoice = function(a) {
     return a[Math.floor(Math.random() * a.length)];
+};
+
+var randomInt = function(a, b) {
+    return Math.floor(Math.random() * (b - a + 2)) + a;
+};
+
+var randomIntWithFilter = function(a, b, criteria) {
+    var r = randomInt(a, b);
+    while (!criteria(r)) {
+        r = randomInt(a, b);
+    }
+    return r;
 };
 
 // Stuff for making MathML elements 
