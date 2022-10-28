@@ -148,13 +148,13 @@ function addFractions(f1, f2) {
     return Fraction(f1.numerator * f2.denominator + f2.numerator * f1.denominator, f1.denominator * f2.denominator);
 }
 function substractFractions(f1, f2) {
-    return addFractions(f1.numerator * f2.denominator - f2.numerator * f1.denominator, f1.denominator * f2.denominator);
+    return Fraction(f1.numerator * f2.denominator - f2.numerator * f1.denominator, f1.denominator * f2.denominator);
 }
 function multiplyFractions(f1, f2) {
     return Fraction(f1.numerator * f2.numerator, f1.denominator * f2.denominator);
 }
 function divideFractions(f1, f2) {
-    return multiplyFractions(f1.numerator * f2.denominator, f1.denominator * f2.numerator);
+    return Fraction(f1.numerator * f2.denominator, f1.denominator * f2.numerator);
 }
 function ltFractions(f1, f2) {
     return (f1.numerator * f2.denominator - f2.numerator * f1.denominator < 0n);
@@ -520,7 +520,7 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
     t.ExplainedSolution = function(id) {
         var p, mi, mn, msub;
         var temp = t.copy();
-        var skeleton = temp.SolutionSkeleton(); 
+        var skeleton = temp.SolutionSkeleton();
         var place = document.getElementById(id);
         for (var i = 0; i < skeleton[0].length; i++) {
             var row = skeleton[0][i][0];
