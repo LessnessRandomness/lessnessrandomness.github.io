@@ -7,30 +7,31 @@
     </head>
     <body>
         <div id="exercise"></div>
-        <button id="button">Show solution!</button>
+        <!-- <button id="button">Hide solution!</button> -->
         <div id="solution"></div>
         <script>
-            var objectiveVector = [Fraction(randomInt(1,9)), Fraction(randomInt(1,9))];
-            var constraintMatrix = [[Fraction(randomInt(1,9)), Fraction(randomInt(1,9))],
-                                    [Fraction(randomInt(1,9)), Fraction(-randomInt(1,9))],
-                                    [Fraction(-randomInt(1,9)), Fraction(randomInt(1,9))]];
-            var bVector = [Fraction(randomInt(10,19)), Fraction(randomInt(10,19)), Fraction(randomInt(10,19))];
+            <!-- var button = document.getElementById("button"); -->
+            <!-- button.onclick = function() { -->
+                <!-- var solution = document.getElementById("solution"); -->
+                <!-- button.removeChild(button.firstChild); -->
+                <!-- if (solution.style.display === "none") { -->
+                    <!-- solution.style.display = "block"; -->
+                    <!-- button.appendChild(textNode("Hide solution!")); -->
+                <!-- } else { -->
+                    <!-- solution.style.display = "none"; -->
+                    <!-- button.appendChild(textNode("Show solution!")); -->
+                <!-- } -->
+            <!-- }; -->
+            
+            // testing SimplexTableWithM
+            var F = Fraction;
+            var objectiveVector = [F(randomInt(1,9)), F(randomInt(1,9))];
+            var constraintMatrix = [[F(randomInt(-9,9)), F(randomInt(-9,9))], [F(randomInt(-9,9)), F(randomInt(-9,9))], [F(randomInt(-9,9)), F(randomInt(-9,9))], [F(randomInt(-9,9)), F(randomInt(-9,9))], [F(randomInt(-9,9)), F(randomInt(-9,9))], [F(randomInt(-9,9)), F(randomInt(-9,9))]];
+            var bVector = [F(randomInt(-9,9)), F(randomInt(-9,9)), F(randomInt(-9,9)), F(randomInt(-9,9)), F(randomInt(-9,9)), F(randomInt(-9,9))];
             var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
             document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
-            var button = document.getElementById("button");
-            button.onclick = function() {
-                var solution = document.getElementById("solution");
-                button.removeChild(button.firstChild);
-                if (solution.style.display === "none") {
-                    solution.style.display = "block";
-                    button.appendChild(textNode("Hide solution!"));
-                } else {
-                    solution.style.display = "none";
-                    button.appendChild(textNode("Show solution!"));
-                }
-            };
-            var LPP_simplex = LPP_normal.toSimplexTable();
-            LPP_simplex.ExplainedSolution("solution");  
+            var simplexWithM = LPP_normal.toSimplexTableWithM();
+            simplexWithM.ExplainedSolution("solution");
         </script>       
     </body>
 </html>

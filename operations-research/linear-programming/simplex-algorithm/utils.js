@@ -94,7 +94,7 @@ function greatestCommonDivisor(a, b) {
     return a;
 }
 
-function Fraction(numerator, denominator = 1n) {
+var Fraction = function(numerator, denominator = 1n) {
     numerator = BigInt(numerator);
     denominator = BigInt(denominator);
     if (denominator === 0n) {
@@ -134,9 +134,9 @@ function Fraction(numerator, denominator = 1n) {
             minus = MathML.node("mo", textNode("-"));
             return [minus, MathML.node("mfrac", [a, b])];
         }
-    };
+    };    
     return f;
-}
+};
 
 function invertedFraction(f) {
     return Fraction(f.denominator, f.numerator);
@@ -161,6 +161,9 @@ function ltFractions(f1, f2) {
 }
 function leFractions(f1, f2) {
     return (f1.numerator * f2.denominator - f2.numerator * f1.denominator <= 0n);
+}
+function eqFractions(f1, f2) {
+    return (f1.numerator * f2.denominator === f1.denominator * f2.numerator);
 }
 function minimumFraction(fs) {
     if (fs.length === 0) {
@@ -333,14 +336,102 @@ function LinearConstraint(coefficients, b, sign = "le") {
 
 var LPP = {};
 
-LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteration = 0) {
+// Stuff for Big M method
+
+var numberWithM = function(a, b = Fraction(0)) {
+    var t = {};
+    t.a = a;
+    t.b = b;
+    t.lt = function(x) {
+        if (ltFractions(t.b, x.b)) {
+            return true;
+        }
+        if (ltFractions(x.b, t.b)) {
+            return false;
+        }
+        return (ltFractions(t.a, x.a));
+    };
+    t.multiply = function(multiplierFraction) {
+        return numberWithM(multiplyFractions(t.a, multiplierFraction), multiplyFractions(t.b, multiplierFraction));
+    };
+    t.divide = function(divisorFraction) {
+        if (eqFractions(divisorFraction, Fraction(0))) {
+            throw("NumberWithM divided by zero.");
+        }
+        return numberWithM(divideFractions(t.a, divisorFraction), divideFractions(t.b, divisorFraction));
+    };
+    t.add = function(x) {
+        return numberWithM(addFractions(t.a, x.a), addFractions(t.b, x.b));
+    };
+    t.substract = function(x) {
+        return numberWithM(substractFractions(t.a, x.a), substractFractions(t.b, x.b));
+    };
+    t.opposite = function() {
+        return numberWithM(oppositeFraction(t.a), oppositeFraction(t.b));
+    };
+    t.toMathML = function() {
+        var math;
+        if (eqFractions(t.a, Fraction(0))) {
+            if (eqFractions(t.b, Fraction(0))) {
+                return [MathML.node("mn", textNode("0"))];
+            }
+            if (eqFractions(t.b, Fraction(1))) {
+                return [MathML.node("mi", textNode("M"))];
+            }
+            if (eqFractions(t.b, Fraction(-1))) {
+                return [MathML.node("mo", textNode("-")), MathML.node("mi", textNode("M"))];
+            }
+            if (ltFractions(Fraction(0), t.b)) {
+                math = t.b.toMathML();
+                math.push(MathML.node("mi", textNode("M")));
+                return math;
+            }
+            if (ltFractions(t.b, Fraction(0))) {
+                math = [MathML.node("mo", textNode("-"))];
+                math = math.concat(oppositeFraction(t.b).toMathML());
+                math.push(MathML.node("mi", textNode("M")));
+                return math;
+            }
+        }
+        if (eqFractions(t.b, Fraction(0))) {
+            return t.a.toMathML();
+        }
+        math = t.a.toMathML();
+        if (eqFractions(t.b, Fraction(1))) {
+            math.push(MathML.node("mo", textNode("+")));
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+        if (eqFractions(t.b, Fraction(-1))) {
+            math.push(MathML.node("mo", textNode("-")));
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+        if (ltFractions(Fraction(0), t.b)) {
+            math.push(MathML.node("mo", textNode("+")));
+            math = math.concat(t.b.toMathML());
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+        if (ltFractions(t.b, Fraction(0))) {
+            math.push(MathML.node("mo", textNode("-")));
+            math = math.concat(oppositeFraction(t.b).toMathML());
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+    };
+    return t;
+};
+
+LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, artificialVariables, iteration = 0) {
     var t = {};
     t.A = A;
     t.B = B;
-    t.D = D;
-    t.d = d;
+    t.D = D; // contains M
+    t.d = d; // contains M ?
     t.startVariables = startVariables;
     t.basicVariables = basicVariables;
+    t.artificialVariables = artificialVariables;
     t.iteration = iteration;
     t.copy = function() {
         var i, j;
@@ -367,10 +458,14 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
         for (i = 0; i < t.startVariables.length; i++) {
             tempStartVariables.push(t.startVariables[i]);
         }
-        return LPP.SimplexTable(tempA, tempB, tempD, t.d, tempBasicVariables, tempStartVariables, t.iteration);
+        var tempArtificialVariables = [];
+        for (i = 0; i < t.artificialVariables.length; i++) {
+            tempArtificialVariables.push(t.artificialVariables[i]);
+        }
+        return LPP.SimplexTableWithM(tempA, tempB, tempD, t.d, tempBasicVariables, tempStartVariables, tempArtificialVariables, t.iteration);
     };
     t.possiblePivot = function(row, col) {
-        if (ltFractions(t.D[col], Fraction(0))) {
+        if (t.D[col].lt(numberWithM(Fraction(0), Fraction(0)))) {
             if (ltFractions(Fraction(0), t.A[row][col])) {
                 for (var i = 0; i < t.B.length; i++) {
                     if (ltFractions(Fraction(0), t.A[i][col])) {
@@ -418,9 +513,9 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
         }
         temp = t.D[col];
         for (j = 0; j < t.D.length; j++) {
-            t.D[j] = substractFractions(t.D[j], multiplyFractions(temp, t.A[row][j]));
+            t.D[j] = t.D[j].substract(temp.multiply(t.A[row][j]));
         }
-        t.d = substractFractions(t.d, multiplyFractions(temp, t.B[row]));
+        t.d = t.d.substract(temp.multiply(t.B[row]));
         t.basicVariables[row] = col;
         t.iteration += 1;
     };
@@ -535,7 +630,7 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
             msub = MathML.node("msub", [mi, mn1]);
             var mo1 = MathML.node("mo", textNode("="));
             var mo2 = MathML.node("mo", textNode("<"));
-            var mn2 = MathML.node("mn", textNode(0));
+            var mn2 = MathML.node("mn", textNode("0"));
             var L = [msub, mo1];
             L = L.concat(temp.D[col].toMathML());
             L = L.concat([mo2, mn2]);
@@ -609,35 +704,40 @@ LPP.SimplexTable = function(A, B, D, d, basicVariables, startVariables, iteratio
         place.appendChild(p);
         p = document.createElement("p");
         p.appendChild(textNode("This is the final iteration. "));
-        if (temp.D.some((x) => ltFractions(x, Fraction(0)))) {
+        if (temp.D.some((x) => x.lt(numberWithM(Fraction(0))))) {
             p.appendChild(textNode("The objective function is unbounded."));
         } else {
-            var plan = temp.getPlan(), mo;
-            p.appendChild(textNode("The optimal plan and the value of objective function: "));
-            place.appendChild(p);
-            for (i = 0; i < temp.startVariables.length; i++) {
-                mi = MathML.node("mi", textNode("x"));
-                mn = MathML.node("mn", textNode(temp.startVariables[i] + 1));
-                msub = MathML.node("msub", [mi, mn]);
+            if (!eqFractions(temp.d.b, Fraction(0))) {
+                p.appendChild(textNode("Plan set is empty."));
+            } else {
+                var plan = temp.getPlan(), mo;
+                p.appendChild(textNode("The optimal plan and the value of objective function: "));
+                place.appendChild(p);
+                for (i = 0; i < temp.startVariables.length; i++) {
+                    mi = MathML.node("mi", textNode("x"));
+                    mn = MathML.node("mn", textNode(temp.startVariables[i] + 1));
+                    msub = MathML.node("msub", [mi, mn]);
+                    mo = MathML.node("mo", textNode("="));
+                    var x_has_value = [msub, mo];
+                    x_has_value = x_has_value.concat(plan[i].toMathML());
+                    x_has_value = MathML.done([x_has_value]);
+                    p.appendChild(x_has_value);
+                    p.appendChild(textNode(", "));
+                }
+                mi = MathML.node("mi", textNode("f"));
                 mo = MathML.node("mo", textNode("="));
-                var x_has_value = [msub, mo];
-                x_has_value = x_has_value.concat(plan[i].toMathML());
-                x_has_value = MathML.done([x_has_value]);
-                p.appendChild(x_has_value);
-                p.appendChild(textNode(", "));
+                var f_has_value = [mi, mo];
+                f_has_value = f_has_value.concat(temp.d.toMathML());
+                f_has_value = MathML.done([f_has_value]);
+                p.appendChild(f_has_value);
+                p.appendChild(textNode("."));
             }
-            mi = MathML.node("mi", textNode("f"));
-            mo = MathML.node("mo", textNode("="));
-            var f_has_value = [mi, mo];
-            f_has_value = f_has_value.concat(temp.d.toMathML());
-            f_has_value = MathML.done([f_has_value]);
-            p.appendChild(f_has_value);
-            p.appendChild(textNode("."));
         }
         place.appendChild(p);
     };
     return t;
 };
+
 
 LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max, A x <= b, x >= 0, with possible integer variables
     var t = {};
@@ -684,20 +784,57 @@ LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max
         var right = MathML.node("mo", textNode(""), {"fence": "true", "form": "postfix"});
         return [o, MathML.node("mrow", [left, cc, right])];
     };
-    t.toSimplexTable = function() {
+    t.toSimplexTableWithM = function() {
         var i, j;
+        var rowsWithArtificialVariables = [];
         var newA = [];
+        var position = 0;
+        var artificialVariables = [];
+        var countNegativeBs = 0;
+        for (i = 0; i < t.b.length; i++) {
+            if (ltFractions(t.b[i], Fraction(0))) {
+                countNegativeBs += 1;
+            }
+        }
+        var newD = [];
+        for (i = 0; i < t.c.length; i++) {
+            newD.push(numberWithM(oppositeFraction(t.c[i])));
+        }
+        var basicVariables = [];
         for (i = 0; i < t.A.length; i++) {
             var temp = [];
-            for (j = 0; j < t.A[0].length; j++) {
+            for (j = 0; j < t.c.length; j++) {
                 temp.push(t.A[i][j]);
             }
-            for (j = 0; j < t.A.length; j++) {
-                if (i === j) {
-                    temp.push(Fraction(1));
-                } else {
-                    temp.push(Fraction(0));
+            if (ltFractions(t.b[i], Fraction(0))) {
+                for (j = 0; j < t.A.length + countNegativeBs; j++) {
+                    if (j === position) {
+                        temp.push(Fraction(1));
+                        newD.push(numberWithM(Fraction(0)));
+                        basicVariables.push(t.c.length + position);
+                    }
+                    if (j === position + 1) {
+                        temp.push(Fraction(-1));
+                        newD.push(numberWithM(Fraction(0), Fraction(1)));
+                        artificialVariables.push(t.c.length + j);
+                        rowsWithArtificialVariables.push(i);
+                    }
+                    if (j !== position && j !== position + 1) {
+                        temp.push(Fraction(0));
+                    }
                 }
+                position += 2;
+            } else {
+                for (j = 0; j < t.A.length + countNegativeBs; j++) {
+                    if (j === position) {
+                        temp.push(Fraction(1));
+                        newD.push(numberWithM(Fraction(0)));
+                        basicVariables.push(t.c.length + position);
+                    } else {
+                        temp.push(Fraction(0));
+                    }
+                }
+                position += 1;
             }
             newA.push(temp);
         }
@@ -705,23 +842,29 @@ LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max
         for (i = 0; i < t.b.length; i++) {
             newB.push(t.b[i]);
         }
-        var newD = [];
-        for (i = 0; i < t.c.length; i++) {
-            newD.push(oppositeFraction(t.c[i]));
-        }
-        for (i = 0; i < t.A.length; i++) {
-            newD.push(Fraction(0));
-        }
-        var d = Fraction(0);
-        var basicVariables = [];
-        for (i = 0; i < t.A.length; i++) {
-            basicVariables.push(i + t.c.length);
-        }
+        var d = numberWithM(Fraction(0));
         var startVariables = [];
         for (i = 0; i < t.c.length; i++) {
             startVariables.push(i);
         }
-        return LPP.SimplexTable(newA, newB, newD, d, basicVariables, startVariables, 0);
+        
+        for (i = 0; i < newB.length; i++) {
+            if (ltFractions(newB[i], Fraction(0))) {
+                newB[i] = oppositeFraction(newB[i]);
+                for (j = 0; j < newA[0].length; j++) {
+                    newA[i][j] = oppositeFraction(newA[i][j]);
+                }
+            }
+        }
+        
+        for (i = 0; i < rowsWithArtificialVariables.length; i++) {
+            for (j = 0; j < newD.length; j++) {
+                newD[j] = newD[j].substract(numberWithM(Fraction(0), Fraction(1)).multiply(newA[rowsWithArtificialVariables[i]][j]));
+            }
+            d = d.substract(numberWithM(Fraction(0), Fraction(1)).multiply(newB[rowsWithArtificialVariables[i]]));
+        }
+                
+        return LPP.SimplexTableWithM(newA, newB, newD, d, basicVariables, startVariables, artificialVariables, 0);
     };
     return t;
 };
