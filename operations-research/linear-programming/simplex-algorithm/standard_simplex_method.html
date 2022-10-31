@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+        <title>Test</title>
+        <script src="utils.js"></script> 
+    </head>
+    <body>
+        <div id="exercise"></div>
+        <div id="solution"></div>
+        <script>
+            var F = Fraction;
+            var objectiveVector = [F(randomInt(1,5)), F(randomInt(1,5))];
+            var constraintMatrix = [[F(randomInt(1,5)), F(randomInt(1,5))], [F(randomInt(1,5)), F(-randomInt(1,5))], [F(-randomInt(1,5)), F(randomInt(1,5))]];
+            var bVector = [F(randomInt(1,10)), F(randomInt(1,10)), F(randomInt(1,10))];
+            var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
+            document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
+            var simplexWithM = LPP_normal.toSimplexTableWithM();
+            simplexWithM.ExplainedSolution("solution");
+        </script>
+    </body>
+</html>

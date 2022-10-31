@@ -12,7 +12,7 @@ var randomChoice = function(a) {
 };
 
 var randomInt = function(a, b) {
-    return Math.floor(Math.random() * (b - a + 2)) + a;
+    return Math.floor(Math.random() * (b - a + 1)) + a;
 };
 
 var randomIntWithFilter = function(a, b, criteria) {
@@ -672,8 +672,9 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
                     p.appendChild(MathML.done([L]));
                     if (k < rows.length - 1) {
                         p.appendChild(textNode(", "));
+                    } else {
+                        p.appendChild(textNode(" and "));
                     }
-                    p.appendChild(textNode(" and "));
                     L0 = L0.concat(f.toMathML());
                     if (k < rows.length - 1) {
                         L0.push(MathML.node("mo", textNode(",")));
