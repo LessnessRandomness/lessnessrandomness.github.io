@@ -15,7 +15,7 @@
             var bVector = [F(randomInt(1,10)), F(randomInt(1,10)), F(randomInt(1,10))];
             var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
             document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
-            var simplexWithM = LPP_normal.toSimplexTableWithM();
+            var simplexWithM = LPP_normal.toSimplexTableWithM("solution");
             simplexWithM.ExplainedSolution("solution");
         </script>
     </body>

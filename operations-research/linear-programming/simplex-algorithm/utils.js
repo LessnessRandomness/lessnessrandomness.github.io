@@ -187,6 +187,96 @@ function defaultVariables(n) {
     return MathML.node("msub", [mi, mn]);
 }
 
+// Stuff for Big M method
+
+var numberWithM = function(a, b = Fraction(0)) {
+    var t = {};
+    t.a = a;
+    t.b = b;
+	t.eq = function(x) {
+		return (eqFractions(t.a, x.a) && eqFractions(t.b, x.b));
+	};
+    t.lt = function(x) {
+        if (ltFractions(t.b, x.b)) {
+            return true;
+        }
+        if (ltFractions(x.b, t.b)) {
+            return false;
+        }
+        return (ltFractions(t.a, x.a));
+    };
+    t.multiply = function(multiplierFraction) {
+        return numberWithM(multiplyFractions(t.a, multiplierFraction), multiplyFractions(t.b, multiplierFraction));
+    };
+    t.divide = function(divisorFraction) {
+        if (eqFractions(divisorFraction, Fraction(0))) {
+            throw("NumberWithM divided by zero.");
+        }
+        return numberWithM(divideFractions(t.a, divisorFraction), divideFractions(t.b, divisorFraction));
+    };
+    t.add = function(x) {
+        return numberWithM(addFractions(t.a, x.a), addFractions(t.b, x.b));
+    };
+    t.substract = function(x) {
+        return numberWithM(substractFractions(t.a, x.a), substractFractions(t.b, x.b));
+    };
+    t.opposite = function() {
+        return numberWithM(oppositeFraction(t.a), oppositeFraction(t.b));
+    };
+    t.toMathML = function() {
+        var math;
+        if (eqFractions(t.a, Fraction(0))) {
+            if (eqFractions(t.b, Fraction(0))) {
+                return [MathML.node("mn", textNode("0"))];
+            }
+            if (eqFractions(t.b, Fraction(1))) {
+                return [MathML.node("mi", textNode("M"))];
+            }
+            if (eqFractions(t.b, Fraction(-1))) {
+                return [MathML.node("mo", textNode("-")), MathML.node("mi", textNode("M"))];
+            }
+            if (ltFractions(Fraction(0), t.b)) {
+                math = t.b.toMathML();
+                math.push(MathML.node("mi", textNode("M")));
+                return math;
+            }
+            if (ltFractions(t.b, Fraction(0))) {
+                math = [MathML.node("mo", textNode("-"))];
+                math = math.concat(oppositeFraction(t.b).toMathML());
+                math.push(MathML.node("mi", textNode("M")));
+                return math;
+            }
+        }
+        if (eqFractions(t.b, Fraction(0))) {
+            return t.a.toMathML();
+        }
+        math = t.a.toMathML();
+        if (eqFractions(t.b, Fraction(1))) {
+            math.push(MathML.node("mo", textNode("+")));
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+        if (eqFractions(t.b, Fraction(-1))) {
+            math.push(MathML.node("mo", textNode("-")));
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+        if (ltFractions(Fraction(0), t.b)) {
+            math.push(MathML.node("mo", textNode("+")));
+            math = math.concat(t.b.toMathML());
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+        if (ltFractions(t.b, Fraction(0))) {
+            math.push(MathML.node("mo", textNode("-")));
+            math = math.concat(oppositeFraction(t.b).toMathML());
+            math.push(MathML.node("mi", textNode("M")));
+            return math;
+        }
+    };
+    return t;
+};
+
 // Linear expressions as coefficients. [a, b, c, d, ...] means linear expression a*x1+b*x2+c*x3+d*x4+...
 
 function LinearExpression(coefficients) {
@@ -195,9 +285,9 @@ function LinearExpression(coefficients) {
     t.opposite = function() {
         var new_t = {};
         for (var i = 0; i < t.coefficients.length; i++) {
-            new_t.coefficients[i] = -t.coefficients;
+            new_t.coefficients[i] = -t.coefficients[i];
         }
-        return new_t;
+        return LinearExpression(new_t);
     };
     t.toMathML = function() {
         var theFirst = -1;
@@ -335,93 +425,6 @@ function LinearConstraint(coefficients, b, sign = "le") {
 }
 
 var LPP = {};
-
-// Stuff for Big M method
-
-var numberWithM = function(a, b = Fraction(0)) {
-    var t = {};
-    t.a = a;
-    t.b = b;
-    t.lt = function(x) {
-        if (ltFractions(t.b, x.b)) {
-            return true;
-        }
-        if (ltFractions(x.b, t.b)) {
-            return false;
-        }
-        return (ltFractions(t.a, x.a));
-    };
-    t.multiply = function(multiplierFraction) {
-        return numberWithM(multiplyFractions(t.a, multiplierFraction), multiplyFractions(t.b, multiplierFraction));
-    };
-    t.divide = function(divisorFraction) {
-        if (eqFractions(divisorFraction, Fraction(0))) {
-            throw("NumberWithM divided by zero.");
-        }
-        return numberWithM(divideFractions(t.a, divisorFraction), divideFractions(t.b, divisorFraction));
-    };
-    t.add = function(x) {
-        return numberWithM(addFractions(t.a, x.a), addFractions(t.b, x.b));
-    };
-    t.substract = function(x) {
-        return numberWithM(substractFractions(t.a, x.a), substractFractions(t.b, x.b));
-    };
-    t.opposite = function() {
-        return numberWithM(oppositeFraction(t.a), oppositeFraction(t.b));
-    };
-    t.toMathML = function() {
-        var math;
-        if (eqFractions(t.a, Fraction(0))) {
-            if (eqFractions(t.b, Fraction(0))) {
-                return [MathML.node("mn", textNode("0"))];
-            }
-            if (eqFractions(t.b, Fraction(1))) {
-                return [MathML.node("mi", textNode("M"))];
-            }
-            if (eqFractions(t.b, Fraction(-1))) {
-                return [MathML.node("mo", textNode("-")), MathML.node("mi", textNode("M"))];
-            }
-            if (ltFractions(Fraction(0), t.b)) {
-                math = t.b.toMathML();
-                math.push(MathML.node("mi", textNode("M")));
-                return math;
-            }
-            if (ltFractions(t.b, Fraction(0))) {
-                math = [MathML.node("mo", textNode("-"))];
-                math = math.concat(oppositeFraction(t.b).toMathML());
-                math.push(MathML.node("mi", textNode("M")));
-                return math;
-            }
-        }
-        if (eqFractions(t.b, Fraction(0))) {
-            return t.a.toMathML();
-        }
-        math = t.a.toMathML();
-        if (eqFractions(t.b, Fraction(1))) {
-            math.push(MathML.node("mo", textNode("+")));
-            math.push(MathML.node("mi", textNode("M")));
-            return math;
-        }
-        if (eqFractions(t.b, Fraction(-1))) {
-            math.push(MathML.node("mo", textNode("-")));
-            math.push(MathML.node("mi", textNode("M")));
-            return math;
-        }
-        if (ltFractions(Fraction(0), t.b)) {
-            math.push(MathML.node("mo", textNode("+")));
-            math = math.concat(t.b.toMathML());
-            math.push(MathML.node("mi", textNode("M")));
-            return math;
-        }
-        if (ltFractions(t.b, Fraction(0))) {
-            math.push(MathML.node("mo", textNode("-")));
-            math = math.concat(oppositeFraction(t.b).toMathML());
-            math.push(MathML.node("mi", textNode("M")));
-            return math;
-        }
-    };
-    return t;
-};
 
 LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, artificialVariables, iteration = 0) {
     var t = {};
@@ -616,7 +619,7 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
         var p, mi, mn, msub;
         var temp = t.copy();
         var skeleton = temp.SolutionSkeleton();
-        var place = document.getElementById(id);
+        var place = document.getElementById(id);		
         for (var i = 0; i < skeleton[0].length; i++) {
             var row = skeleton[0][i][0];
             var col = skeleton[0][i][1];
@@ -739,12 +742,69 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
     return t;
 };
 
+LPP.CanonicalForm = function(c, A, b, artificialVariables, integerVariables = []) {
+	var t = {};
+	t.c = c;
+	t.A = A;
+	t.b = b;
+	t.artificialVariables = artificialVariables;
+	t.integerVariables = integerVariables;
+	t.toMathML = function() {
+		var i = 0;
+		var temp = LinearExpression(t.c).toMathML();
+		for (i = 0; i < artificialVariables.length; i++) {
+			temp.push(MathML.node("mo", textNode("-")));
+			temp.push(MathML.node("mi", textNode("M")));
+			temp = temp.concat(defaultVariables(artificialVariables[i]));
+		}
+		temp.push(MathML.node("mo", textNode("→"), {"stretchy": "false"}));
+        temp.push(MathML.node("mi", textNode("max")));
+		var cc = [];
+        for (i = 0; i < t.A.length; i++) {
+            cc.push(MathML.node("mtr", MathML.node("mtd", MathML.node("mrow", LinearConstraint(t.A[i], t.b[i], "eq").toMathML()))));
+        }
+        var ge_zero = [];
+        for (i = 0; i < t.A[0].length; i++) {
+            if (i !== 0)
+                ge_zero.push(MathML.node("mo", textNode(",")));
+            ge_zero.push(defaultVariables(i));
+        }
+        ge_zero.push(MathML.node("mo", textNode("≥")));
+        ge_zero.push(MathML.node("mn", textNode("0")));
+        ge_zero = MathML.node("mtr", MathML.node("mtd", MathML.node("mrow", ge_zero)));
+        cc.push(ge_zero);
+        if (integerVariables.length > 0) {
+            integerVariables.sort();
+            var b = true;
+            var integers = [];
+            for (i = 0; i < integerVariables.length; i++) {
+                if (b) {
+                    b = false;
+                } else {
+                    integers.push(MathML.node("mo", textNode(",")));
+                }
+                integers = integers.concat(defaultVariables(integerVariables[i]));
+            }
+            integers.push(MathML.node("mo", textNode("\u2208"))); // &isin;
+            integers.push(MathML.node("mi", textNode("\u2124"), {"mathvariant": "normal"})); // &integers;
+            integers = MathML.node("mtr", MathML.node("mtd", MathML.node("mrow", integers)));
+            cc = cc.concat(integers);
+        }
+        cc = MathML.node("mtable", cc, {"columnalign": "center"});
+        var left = MathML.node("mo", textNode("{"), {"fence": "true", "form": "prefix"});
+        var right = MathML.node("mo", textNode(""), {"fence": "true", "form": "postfix"});
+        return [temp, MathML.node("mrow", [left, cc, right])];
+	};
+	return t;
+}
 
-LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max, A x <= b, x >= 0, with possible integer variables
+
+LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) { // f = C^T x -> max, A x <= b, x >= 0, with possible integer variables
     var t = {};
     t.c = c;
     t.A = A;
     t.b = b;
+	t.artificialVariables = artificialVariables;
     t.integerVariables = integerVariables;
     t.toMathML = function() {
         var i;
@@ -785,7 +845,67 @@ LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max
         var right = MathML.node("mo", textNode(""), {"fence": "true", "form": "postfix"});
         return [o, MathML.node("mrow", [left, cc, right])];
     };
-    t.toSimplexTableWithM = function() {
+	t.toCanonicalForm = function() {
+		var i, j;
+		var newA = [], newB = [];
+        var position = 0;
+        var artificialVariables = [];
+        var countNegativeBs = 0;
+		var newC = [];
+		
+        for (i = 0; i < t.A.length; i++) {
+			if (ltFractions(t.b[i], Fraction(0))) {
+                countNegativeBs += 1;
+            }
+			var temp = [];
+			for (j = 0; j < t.A[0].length; j++) {
+				temp.push(t.A[i][j]);
+			}
+			newB.push(t.b[i]);
+			newA.push(temp);
+        }
+        for (i = 0; i < t.A.length; i++) {
+			temp = [];
+            if (ltFractions(t.b[i], Fraction(0))) {
+                for (j = 0; j < t.A.length + countNegativeBs; j++) {
+                    if (j === position) {
+                        temp.push(Fraction(1));
+                    }
+                    if (j === position + 1) {
+                        temp.push(Fraction(-1));
+                        artificialVariables.push(t.c.length + j);
+                    }
+                    if (j !== position && j !== position + 1) {
+                        temp.push(Fraction(0));
+                    }
+                }
+                position += 2;
+            } else {
+                for (j = 0; j < t.A.length + countNegativeBs; j++) {
+                    if (j === position) {
+                        temp.push(Fraction(1));
+                    } else {
+                        temp.push(Fraction(0));
+                    }
+                }
+                position += 1;
+            }
+            newA[i] = newA[i].concat(temp);
+        }
+		for (i = 0; i < t.c.length; i++) {
+			newC.push(t.c[i]);
+		}
+		for (i = 0; i < newA.length; i++) {
+			if (ltFractions(t.b[i], Fraction(0))) {
+				for (j = 0; j < newA[0].length; j++) {
+					newA[i][j] = oppositeFraction(newA[i][j]);
+				}
+				newB[i] = oppositeFraction(newB[i]);
+			}
+		}
+		return LPP.CanonicalForm(newC, newA, newB, artificialVariables);
+	};
+    t.toSimplexTableWithM = function(id) {
         var i, j;
         var rowsWithArtificialVariables = [];
         var newA = [];
@@ -797,6 +917,7 @@ LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max
                 countNegativeBs += 1;
             }
         }
+		var d = Fraction(0);
         var newD = [];
         for (i = 0; i < t.c.length; i++) {
             newD.push(numberWithM(oppositeFraction(t.c[i])));
@@ -848,8 +969,8 @@ LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max
         for (i = 0; i < t.c.length; i++) {
             startVariables.push(i);
         }
-        
-        for (i = 0; i < newB.length; i++) {
+		
+		for (i = 0; i < newB.length; i++) {
             if (ltFractions(newB[i], Fraction(0))) {
                 newB[i] = oppositeFraction(newB[i]);
                 for (j = 0; j < newA[0].length; j++) {
@@ -857,13 +978,30 @@ LPP.NormalForm = function (c, A, b, integerVariables = []) { // f = C^T x -> max
                 }
             }
         }
-        
+		
+		if (id !== undefined && countNegativeBs > 0) {
+			var place = document.getElementById(id);
+			var p = document.createElement("p");
+			place.appendChild(p);
+			p.appendChild(textNode("We get such LPP after transforming it."));
+			place.appendChild(p);
+			var LPP_canonical = LPP_normal.toCanonicalForm();
+			place.appendChild(MathML.done(LPP_canonical.toMathML()));
+			
+			p = document.createElement("p");
+			p.appendChild(MathML.done((LPP.SimplexTableWithM(newA, newB, newD, d, basicVariables, artificialVariables, 0).toMathML())));
+			place.appendChild(p);
+			p = document.createElement("p");
+			p.appendChild(textNode("Before we start using the simplex algorithm, we have to substract rows that have artificial variables (multiplied by M) from the last row. That corresponds to expressing the artificial variables from equations (of the canonical form) and then substituting into the objective function."));
+			place.appendChild(p);
+		}		
+		
         for (i = 0; i < rowsWithArtificialVariables.length; i++) {
             for (j = 0; j < newD.length; j++) {
                 newD[j] = newD[j].substract(numberWithM(Fraction(0), Fraction(1)).multiply(newA[rowsWithArtificialVariables[i]][j]));
             }
             d = d.substract(numberWithM(Fraction(0), Fraction(1)).multiply(newB[rowsWithArtificialVariables[i]]));
-        }
+        }		
                 
         return LPP.SimplexTableWithM(newA, newB, newD, d, basicVariables, startVariables, artificialVariables, 0);
     };

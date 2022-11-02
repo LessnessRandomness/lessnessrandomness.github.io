@@ -11,11 +11,11 @@
         <script>
             var F = Fraction;
             var objectiveVector = [F(randomInt(1,5)), F(randomInt(1,5))];
-            var constraintMatrix = [[F(randomInt(1,5)), F(randomInt(1,5))], [F(randomInt(1,5)), F(-randomInt(1,5))], [F(-randomInt(1,5)), F(randomInt(1,5))]];
-            var bVector = [F(randomInt(1,10)), F(-randomInt(1,10)), F(randomInt(1,10))];
+            var constraintMatrix = [[F(randomInt(1,5)), F(randomInt(1,5))], [F(randomInt(1,5)), F(-randomInt(1,5))], [F(-randomInt(1,5)), F(randomInt(1,5))], [F(randomInt(1,5)), F(-randomInt(1,5))]];
+            var bVector = [F(randomInt(1,10)), F(-randomInt(1,10)), F(randomInt(1,10)), F(-randomInt(1,10))];
             var LPP_normal = LPP.NormalForm(objectiveVector, constraintMatrix, bVector);
             document.getElementById("exercise").appendChild(MathML.done(LPP_normal.toMathML()));
-            var simplexWithM = LPP_normal.toSimplexTableWithM();
+            var simplexWithM = LPP_normal.toSimplexTableWithM("solution");
             simplexWithM.ExplainedSolution("solution");
         </script>
     </body>
