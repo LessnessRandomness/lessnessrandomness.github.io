@@ -134,44 +134,44 @@ var Fraction = function(numerator, denominator = 1n) {
             minus = MathML.node("mo", textNode("-"));
             return [minus, MathML.node("mfrac", [a, b])];
         }
-    };    
+    };
+	f.invert = function() {
+		return Fraction(f.denominator, f.numerator);
+	};
+	f.opposite = function() {
+		return Fraction(-f.numerator, f.denominator);
+	};
+	f.add = function(x) {
+		return Fraction(f.numerator * x.denominator + x.numerator * f.denominator, f.denominator * x.denominator)
+	};
+	f.substract = function(x) {
+		return Fraction(f.numerator * x.denominator - x.numerator * f.denominator, f.denominator * x.denominator);
+	};
+	f.multiply = function(x) {
+		return Fraction(f.numerator * x.numerator, f.denominator * x.denominator);
+	};
+	f.divide = function(x) {
+		return Fraction(f.numerator * x.denominator, f.denominator * x.numerator);
+	};
+	f.lt = function(x) {
+		return (f.numerator * x.denominator - x.numerator * f.denominator < 0n);
+	};
+	f.le = function(x) {
+		return (f.numerator * x.denominator - x.numerator * f.denominator <= 0n);
+	};
+	f.eq = function(x) {
+		return (f.numerator * x.denominator === f.denominator * x.numerator);
+	};
     return f;
 };
 
-function invertedFraction(f) {
-    return Fraction(f.denominator, f.numerator);
-}
-function oppositeFraction(f) {
-    return Fraction(-f.numerator, f.denominator);
-}
-function addFractions(f1, f2) {
-    return Fraction(f1.numerator * f2.denominator + f2.numerator * f1.denominator, f1.denominator * f2.denominator);
-}
-function substractFractions(f1, f2) {
-    return Fraction(f1.numerator * f2.denominator - f2.numerator * f1.denominator, f1.denominator * f2.denominator);
-}
-function multiplyFractions(f1, f2) {
-    return Fraction(f1.numerator * f2.numerator, f1.denominator * f2.denominator);
-}
-function divideFractions(f1, f2) {
-    return Fraction(f1.numerator * f2.denominator, f1.denominator * f2.numerator);
-}
-function ltFractions(f1, f2) {
-    return (f1.numerator * f2.denominator - f2.numerator * f1.denominator < 0n);
-}
-function leFractions(f1, f2) {
-    return (f1.numerator * f2.denominator - f2.numerator * f1.denominator <= 0n);
-}
-function eqFractions(f1, f2) {
-    return (f1.numerator * f2.denominator === f1.denominator * f2.numerator);
-}
 function minimumFraction(fs) {
     if (fs.length === 0) {
         throw("Empty array, can't find minimum value");
     }
     var m = fs[0];
     for (var i = 1; i < fs.length; i++) {
-        if (ltFractions(fs[i], m)) {
+        if (fs[i].lt(m)) {
             m = fs[i];
         }
     }
@@ -194,82 +194,82 @@ var numberWithM = function(a, b = Fraction(0)) {
     t.a = a;
     t.b = b;
 	t.eq = function(x) {
-		return (eqFractions(t.a, x.a) && eqFractions(t.b, x.b));
+		return (t.a.eq(x.a) && t.b.eq(x.b));
 	};
     t.lt = function(x) {
-        if (ltFractions(t.b, x.b)) {
+        if (t.b.lt(x.b)) {
             return true;
         }
-        if (ltFractions(x.b, t.b)) {
+        if (x.b.lt(t.b)) {
             return false;
         }
-        return (ltFractions(t.a, x.a));
+        return (t.a.lt(x.a));
     };
     t.multiply = function(multiplierFraction) {
-        return numberWithM(multiplyFractions(t.a, multiplierFraction), multiplyFractions(t.b, multiplierFraction));
+		return numberWithM(t.a.multiply(multiplierFraction), t.b.multiply(multiplierFraction));
     };
     t.divide = function(divisorFraction) {
-        if (eqFractions(divisorFraction, Fraction(0))) {
+        if (divisorFraction.eq(Fraction(0))) {
             throw("NumberWithM divided by zero.");
         }
-        return numberWithM(divideFractions(t.a, divisorFraction), divideFractions(t.b, divisorFraction));
+        return numberWithM(t.a.divide(divisorFraction), t.b.divide(divisorFraction));
     };
     t.add = function(x) {
-        return numberWithM(addFractions(t.a, x.a), addFractions(t.b, x.b));
+        return numberWithM(t.a.add(x.a), t.b.add(x.b));
     };
     t.substract = function(x) {
-        return numberWithM(substractFractions(t.a, x.a), substractFractions(t.b, x.b));
+        return numberWithM(t.a.substract(x.a), t.b.substract(x.b));
     };
     t.opposite = function() {
-        return numberWithM(oppositeFraction(t.a), oppositeFraction(t.b));
+        return numberWithM(t.a.opposite(), t.b.opposite());
     };
     t.toMathML = function() {
         var math;
-        if (eqFractions(t.a, Fraction(0))) {
-            if (eqFractions(t.b, Fraction(0))) {
+        if (t.a.eq(Fraction(0))) {
+            if (t.b.eq(Fraction(0))) {
                 return [MathML.node("mn", textNode("0"))];
             }
-            if (eqFractions(t.b, Fraction(1))) {
+            if (t.b.eq(Fraction(1))) {
                 return [MathML.node("mi", textNode("M"))];
             }
-            if (eqFractions(t.b, Fraction(-1))) {
+            if (t.b.eq(Fraction(-1))) {
                 return [MathML.node("mo", textNode("-")), MathML.node("mi", textNode("M"))];
             }
-            if (ltFractions(Fraction(0), t.b)) {
+            if (Fraction(0).lt(t.b)) {
                 math = t.b.toMathML();
                 math.push(MathML.node("mi", textNode("M")));
                 return math;
             }
-            if (ltFractions(t.b, Fraction(0))) {
+            if (t.b.lt(Fraction(0))) {
                 math = [MathML.node("mo", textNode("-"))];
-                math = math.concat(oppositeFraction(t.b).toMathML());
+                math = math.concat(t.b.opposite().toMathML());
                 math.push(MathML.node("mi", textNode("M")));
                 return math;
             }
         }
-        if (eqFractions(t.b, Fraction(0))) {
+        if (t.b.eq(Fraction(0))) {
             return t.a.toMathML();
         }
         math = t.a.toMathML();
-        if (eqFractions(t.b, Fraction(1))) {
+        if (t.b.eq(Fraction(1))) {
             math.push(MathML.node("mo", textNode("+")));
             math.push(MathML.node("mi", textNode("M")));
             return math;
         }
-        if (eqFractions(t.b, Fraction(-1))) {
+        if (t.b.eq(Fraction(-1))) {
             math.push(MathML.node("mo", textNode("-")));
             math.push(MathML.node("mi", textNode("M")));
             return math;
         }
-        if (ltFractions(Fraction(0), t.b)) {
+        if (Fraction(0).lt(t.b)) {
             math.push(MathML.node("mo", textNode("+")));
             math = math.concat(t.b.toMathML());
             math.push(MathML.node("mi", textNode("M")));
             return math;
         }
-        if (ltFractions(t.b, Fraction(0))) {
+        if (t.b.lt(Fraction(0))) {
             math.push(MathML.node("mo", textNode("-")));
-            math = math.concat(oppositeFraction(t.b).toMathML());
+            math = math.concat(t.b.opposite().toMathML());
             math.push(MathML.node("mi", textNode("M")));
             return math;
         }
@@ -285,14 +285,14 @@ function LinearExpression(coefficients) {
     t.opposite = function() {
         var new_t = {};
         for (var i = 0; i < t.coefficients.length; i++) {
-            new_t.coefficients[i] = -t.coefficients[i];
+            new_t.coefficients[i] = t.coefficients[i].opposite();
         }
         return LinearExpression(new_t);
     };
     t.toMathML = function() {
         var theFirst = -1;
         for (i = 0; i < t.coefficients.length; i++) {
-            if (t.coefficients[i].numerator !== 0n) {
+            if (!t.coefficients[i].eq(Fraction(0))) {
                 theFirst = i;
                 break;
             }
@@ -340,7 +340,7 @@ function LinearExpression(coefficients) {
                     minus = MathML.node("mo", textNode("-"));
                     M.push(minus);
                     if (temp.numerator !== -1n || temp.denominator !== 1n) {
-                        M = M.concat(oppositeFraction(temp).toMathML());
+                        M = M.concat(temp.opposite().toMathML());
                     }
                     M.push(defaultVariables(i));
                 }
@@ -359,7 +359,7 @@ function ObjectiveFunction(coefficients, maximum = true) {
     t.maximum = maximum;
     t.opposite = function() {
         var new_t = {};
-        new_t.coefficients = t.coefficients.map((x) => -x);
+        new_t.coefficients = t.coefficients.map((x) => x.opposite());
         new_t.maximum = ! t.maximum;
         return new_t;
     };
@@ -391,8 +391,8 @@ function LinearConstraint(coefficients, b, sign = "le") {
     t.revertSign = function() {
         var new_t = {};
         if (t.sign !== "eq") {
-            new_t.coefficients = t.coefficients.map((x) => -x);
-            new_t.B = -t.B;
+            new_t.coefficients = t.coefficients.map((x) => x.opposite());
+            new_t.B = t.B.opposite();
             if (t.sign === "le") {
                 new_t.sign = "ge";
             } else {
@@ -469,10 +469,10 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
     };
     t.possiblePivot = function(row, col) {
         if (t.D[col].lt(numberWithM(Fraction(0), Fraction(0)))) {
-            if (ltFractions(Fraction(0), t.A[row][col])) {
+            if (Fraction(0).lt(t.A[row][col])) {
                 for (var i = 0; i < t.B.length; i++) {
-                    if (ltFractions(Fraction(0), t.A[i][col])) {
-                        if (ltFractions(divideFractions(t.B[i], t.A[i][col]), divideFractions(t.B[row], t.A[row][col]))) {
+                    if (Fraction(0).lt(t.A[i][col])) {
+                        if (t.B[i].divide(A[i][col]).lt(t.B[row].divide(t.A[row][col]))) {
                             return false;
                         }
                     }
@@ -500,18 +500,18 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
         }
         for (i = 0; i < t.A[0].length; i++) {
             if (i !== col) {
-                t.A[row][i] = divideFractions(t.A[row][i], t.A[row][col]);
+                t.A[row][i] = t.A[row][i].divide(t.A[row][col]);
             }
         }
-        t.B[row] = divideFractions(t.B[row], t.A[row][col]);
+        t.B[row] = t.B[row].divide(t.A[row][col]);
         t.A[row][col] = Fraction(1);
         for (i = 0; i < t.A.length; i++) {
             if (i !== row) {
                 temp = t.A[i][col];
                 for (j = 0; j < t.A[0].length; j++) {
-                    t.A[i][j] = substractFractions(t.A[i][j], multiplyFractions(temp, t.A[row][j]));
+                    t.A[i][j] = t.A[i][j].substract(temp.multiply(t.A[row][j]));
                 }
-                t.B[i] = substractFractions(t.B[i], multiplyFractions(temp, t.B[row]));
+                t.B[i] = t.B[i].substract(temp.multiply(t.B[row]));
             }
         }
         temp = t.D[col];
@@ -643,7 +643,7 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
             p.appendChild(textNode("Chosen pivot row is " + (row + 1).toString() + ", because "));
             var rows = [], k;
             for (k = 0; k < temp.B.length; k++) {
-                if (ltFractions(Fraction(0), temp.A[k][col])) {
+                if (Fraction(0).lt(temp.A[k][col])) {
                     rows.push(k);
                 }
             }
@@ -669,7 +669,7 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
                     var b_div_A_frac = MathML.node("mfrac", [num, den]);
                     L.push(b_div_A_frac);
                     L.push(MathML.node("mo", textNode("=")));
-                    var f = divideFractions(temp.B[rows[k]], temp.A[rows[k]][col]);
+                    var f = temp.B[rows[k]].divide(temp.A[rows[k]][col]);
                     fs.push(f);
                     L = L.concat(f.toMathML());
                     p.appendChild(MathML.done([L]));
@@ -711,7 +711,7 @@ LPP.SimplexTableWithM = function(A, B, D, d, basicVariables, startVariables, art
         if (temp.D.some((x) => x.lt(numberWithM(Fraction(0))))) {
             p.appendChild(textNode("The objective function is unbounded."));
         } else {
-            if (!eqFractions(temp.d.b, Fraction(0))) {
+            if (!temp.d.b.eq(Fraction(0))) {
                 p.appendChild(textNode("Plan set is empty."));
             } else {
                 var plan = temp.getPlan(), mo;
@@ -854,7 +854,7 @@ LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) {
 		var newC = [];
 		
         for (i = 0; i < t.A.length; i++) {
-			if (ltFractions(t.b[i], Fraction(0))) {
+			if (t.b[i].lt(Fraction(0))) {
                 countNegativeBs += 1;
             }
 			var temp = [];
@@ -866,7 +866,7 @@ LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) {
         }
         for (i = 0; i < t.A.length; i++) {
 			temp = [];
-            if (ltFractions(t.b[i], Fraction(0))) {
+            if (t.b[i].lt(Fraction(0))) {
                 for (j = 0; j < t.A.length + countNegativeBs; j++) {
                     if (j === position) {
                         temp.push(Fraction(1));
@@ -896,11 +896,11 @@ LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) {
 			newC.push(t.c[i]);
 		}
 		for (i = 0; i < newA.length; i++) {
-			if (ltFractions(t.b[i], Fraction(0))) {
+			if (t.b[i].lt(Fraction(0))) {
 				for (j = 0; j < newA[0].length; j++) {
-					newA[i][j] = oppositeFraction(newA[i][j]);
+					newA[i][j] = newA[i][j].opposite();
 				}
-				newB[i] = oppositeFraction(newB[i]);
+				newB[i] = newB[i].opposite();
 			}
 		}
 		return LPP.CanonicalForm(newC, newA, newB, artificialVariables);
@@ -913,14 +913,14 @@ LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) {
         var artificialVariables = [];
         var countNegativeBs = 0;
         for (i = 0; i < t.b.length; i++) {
-            if (ltFractions(t.b[i], Fraction(0))) {
+            if (t.b[i].lt(Fraction(0))) {
                 countNegativeBs += 1;
             }
         }
 		var d = Fraction(0);
         var newD = [];
         for (i = 0; i < t.c.length; i++) {
-            newD.push(numberWithM(oppositeFraction(t.c[i])));
+            newD.push(numberWithM(t.c[i].opposite()));
         }
         var basicVariables = [];
         for (i = 0; i < t.A.length; i++) {
@@ -928,7 +928,7 @@ LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) {
             for (j = 0; j < t.c.length; j++) {
                 temp.push(t.A[i][j]);
             }
-            if (ltFractions(t.b[i], Fraction(0))) {
+            if (t.b[i].lt(Fraction(0))) {
                 for (j = 0; j < t.A.length + countNegativeBs; j++) {
                     if (j === position) {
                         temp.push(Fraction(1));
@@ -971,10 +971,10 @@ LPP.NormalForm = function(c, A, b, artificialVariables, integerVariables = []) {
         }
 		
 		for (i = 0; i < newB.length; i++) {
-            if (ltFractions(newB[i], Fraction(0))) {
-                newB[i] = oppositeFraction(newB[i]);
+            if (newB[i].lt(Fraction(0))) {
+                newB[i] = newB[i].opposite();
                 for (j = 0; j < newA[0].length; j++) {
-                    newA[i][j] = oppositeFraction(newA[i][j]);
+                    newA[i][j] = newA[i][j].opposite();
                 }
             }
         }
