@@ -3,56 +3,24 @@
 	<head>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
 		<title>Test</title>
-		<script src="algebra.min.js"></script>
+		<script src="algebra.js"></script>
 		<script src="svg.min.js"></script>
+		<script src="simplex_method.js"></script>
 	</head>
 	<body>
 		<p>Testing...</p>
 		<p id="test"></p>
-		<!-- <svg id="svg1" width="300" height="300" xmlns="http://www.w3.org/2000/svg"> -->
-			<!-- <rect x="40" y="40" height="100" width="100" style="stroke:black; fill:lightblue"/> -->
-			<!-- <foreignObject x="50" y="50" width="100" height="100"> -->
-				<!-- <math xmlns="http://www.w3.org/1998/Math/MathML"> -->
-					<!-- <mrow> -->
-						<!-- <mi>A</mi> -->
-						<!-- <mo>=</mo> -->
-						<!-- <mrow> -->
-							<!-- <mo fence="true" form="prefix">[</mo> -->
-							<!-- <mtable> -->
-								<!-- <mtr> -->
-									<!-- <mtd> -->
-										<!-- <mi>x</mi> -->
-									<!-- </mtd> -->
-									<!-- <mtd> -->
-										<!-- <mi>y</mi> -->
-									<!-- </mtd> -->
-								<!-- </mtr> -->
-								<!-- <mtr> -->
-									<!-- <mtd> -->
-										<!-- <mi>z</mi> -->
-									<!-- </mtd> -->
-									<!-- <mtd> -->
-										<!-- <mi>w</mi> -->
-									<!-- </mtd> -->
-								<!-- </mtr> -->
-							<!-- </mtable> -->
-							<!-- <mo fence="true" form="postfix">]</mo> -->
-						<!-- </mrow> -->
-					<!-- </mrow> -->
-				<!-- </math> -->
-			<!-- </foreignObject> -->
-		<!-- </svg> -->
 		<script>
-			// initialize SVG.js
 			var draw = SVG().addTo('body').size(200, 200);
-			
-			// draw pink square
-			draw.rect(100, 100).move(100, 50).fill('pink');
-
-			// var foreignObject = draw.foreignObject(width, height)
-			var fobj = draw.foreignObject(100,100).move(100, 50);
+			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
+			var fobj = draw.foreignObject(100, 100).move(100, 100);
 			var x = MathML.done(new MathML("mi", textNode("x")));
 			fobj.add(x);
+		</script>
+		<script>
+			var place = document.getElementById("test");
+			var linexp = new LinearExpression([new Fraction(1, 2), new Fraction(2, 3), new Fraction(-1, 7)]);
+			place.appendChild(MathML.done(MathML.row(linexp.toMathML())));
 		</script>
 	</body>
 </html>

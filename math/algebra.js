@@ -353,7 +353,7 @@ class Term {
 			thisTerm.variables = thisTerm.variables.concat(a.variables);
 			thisTerm.coefficients = thisTerm.coefficients.concat(a.coefficients);
 		} else if (a instanceof Fraction || typeof(a) === "bigint") {
-			var newCoef = (a instanceof BigInt ? new Fraction(a) : a);
+			var newCoef = (typeof(a) === "bigint" ? new Fraction(a) : a);
 			if (thisTerm.variables.length === 0) {
 				thisTerm.coefficients.push(newCoef);
 			} else {
@@ -619,11 +619,17 @@ class Expression {
 		for (var i = 0; i < this.terms.length; i++) {
 			var term = this.terms[i];
 			if (b) {
-				m.push(term.coefficients[0].numer < 0n ? new MathML("mo", textNode("-")) : new MathML("mo", textNode("+")));
+				if (term.coefficients[0].numer < 0n) {
+					m.push(new MathML("mo", textNode("-")));
+					term = term.multiply(-1n);
+				} else {
+					m.push(new MathML("mo", textNode("+")));
+				}
 			} else {
 				b = true;
 				if (term.coefficients[0].numer < 0n) {
 					m.push(new MathML("mo", textNode("-")));
+					term = term.multiply(-1n);
 				}	
 			}
 			m = m.concat(term.toMathML());
@@ -631,11 +637,17 @@ class Expression {
 		for (var i = 0; i < this.constants.length; i++) {
 			var constant = this.constants[i];
 			if (b) {
-				m.push(constant.numer < 0n ? new MathML("mo", textNode("-")) : new MathML("mo", textNode("+")));
+				if (constant.numer < 0n) {
+					m.push(new MathML("mo", textNode("-")));
+					constant = constant.multiply(-1n);
+				} else {
+					m.push(new MathML("mo", textNode("-")));
+				}
 			} else {
 				b = true;
 				if (constant.numer < 0n) {
 					m.push(new MathML("mo", textNode("-")));
+					constant = constant.multiply(-1n);
 				}
 			}
 			m = m.concat(constant.abs().toMathML());
