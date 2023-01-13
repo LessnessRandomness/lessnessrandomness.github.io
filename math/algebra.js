@@ -78,6 +78,25 @@ class MathML {
 			return (new MathML("math", new MathML("mrow", content), attributes));
         }		
 	}
+	static table(content, block = true, alignment = (i) => "center") {
+		var rows = content.length;
+		var cols = content[0].length;
+		var columnalign = [];
+		for (var i = 0; i < cols; i++) {
+			columnalign.push(alignment(i));
+		}
+		columnalign = columnalign.join(" ");
+		var mtable = new MathML("mtable", [], {"columnalign": columnalign});
+		for (var r = 0; r < rows; r++) {
+			var mtr = new MathML("mtr");
+			for (var c = 0; c < cols; c++) {
+				var mtd = new MathML("mtd", content[r][c]);
+				mtr.appendChild(mtd);
+			}
+			mtable.appendChild(mtr);
+		}
+		return mtable;
+	}
 }
 
 BigInt.prototype.toMathML = function() {

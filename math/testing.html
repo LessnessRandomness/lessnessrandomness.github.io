@@ -32,65 +32,16 @@
 			test1.appendChild(MathML.done(MathML.row(linexp.toMathML())));
 			test2.appendChild(MathML.done(MathML.row(linobj.toMathML())));
 			test3.appendChild(MathML.done(MathML.row(linconstr.toMathML())));
+			
+			var M = [];
+			for (var i = 0; i < 10; i++) {
+				M.push([]);
+				for (var j = 0; j < 10; j++) {
+					M[i].push(new MathML("mn", textNode((i+1)*(j+1))));
+				}
+			}
+			table = MathML.table(M);
+			test4.appendChild(MathML.done(table));
 		</script>
-		<math>
-  <mtable columnalign="center">
-    <mtr>
-      <mtd>
-        <mi>o</mi>
-      </mtd>
-    </mtr>
-    <mtr>
-      <mtd>
-        <mrow>
-          <mo fence="true" form="prefix">{</mo>
-          <mtable columnalign="center">
-            <mtr>
-              <mtd>
-                <msub>
-                  <mi>c</mi>
-                  <mn>1</mn>
-                </msub>
-              </mtd>
-            </mtr>
-            <mtr>
-              <mtd>
-                <msub>
-                  <mi>c</mi>
-                  <mn>2</mn>
-                </msub>
-              </mtd>
-            </mtr>
-            <mtr>
-              <mtd>
-                <msub>
-                  <mi>c</mi>
-                  <mn>3</mn>
-                </msub>
-              </mtd>
-            </mtr>
-            <mtr>
-              <mtd>
-                <msub>
-                  <mi>c</mi>
-                  <mn>4</mn>
-                </msub>
-              </mtd>
-            </mtr>
-            <mtr>
-              <mtd>
-                <msub>
-                  <mi>c</mi>
-                  <mn>5</mn>
-                </msub>
-              </mtd>
-            </mtr>
-          </mtable>
-          <mo fence="true" form="postfix"></mo>
-        </mrow>
-      </mtd>
-    </mtr>
-  </mtable>
-</math>
 	</body>
 </html>
