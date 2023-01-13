@@ -55,8 +55,81 @@ class LinearExpression {
 			var term = variable.multiply(this.coeffs[i]);
 			exp = exp.add(term);
 		}
-		alert(JSON.stringify(exp));
 		return exp.toMathML();
 	}
 }
 
+//
+
+class LinearObjective {
+	constructor(coeffs, maximise = true) {
+		this.coeffs = coeffs;
+		this.maximise = maximise;
+	}
+	copy() {
+		return new LinearObjective(this.coeffs, this.maximise);
+	}
+	opposite() {
+		var t = this.copy();
+		t.coeffs = t.coeffs.map((x) => x.opposite());
+		return t;
+	}
+	toMathML() {
+		var m = (new LinearExpression(this.coeffs).toMathML());
+		var arrow = new MathML("mo", textNode("→"));
+		m.push(arrow);
+		var mi = new MathML("mi", textNode(this.maximise ? "max" : "min"));
+		m.push(mi);
+		return m;
+	}
+}
+
+// LinearConstraint
+
+class LinearConstraint {
+	constructor(coeffs, b, sign = "le") {
+		this.coeffs = coeffs;
+		this.b = b;
+		this.sign = sign;
+	}
+	copy() {
+		return new LinearConstraint(this.coeffs, this.b, this.sign);
+	}
+	revertSign() {
+		var t = this.copy();
+		if (t.sign !== "eq") {
+			t.coeffs = t.coeffs.map((x) => x.opposite());
+			t.b = t.b.opposite();
+			t.sign = (t.sign === "le") ? "ge" : "le";
+		}
+		return t;
+	}
+	toMathML() {
+		var m = (new LinearExpression(this.coeffs)).toMathML();
+		var mo;
+		if (this.sign === "le") {
+			mo = new MathML("mo", textNode("\u2264")); // &le;
+		}
+		if (this.sign === "eq") {
+			mo = new MathML("mo", textNode("="));
+		}
+		if (this.sign === "ge") {
+			mo = new MathML("mo", textNode("\u2265")); // &ge;
+		}
+		m.push(mo);
+		m = m.concat(this.b.toMathML());
+		return m;
+	}
+}
+
+// LinearProgrammingProblem
+
+class LinearProgrammingProblem {
+	constructor(objective, constraints) {
+		this.objective = objective;
+		this.constraints = constraints;
+	}
+	toMathML() {
+		
+	}
+}

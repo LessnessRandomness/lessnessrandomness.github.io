@@ -9,7 +9,10 @@
 	</head>
 	<body>
 		<p>Testing...</p>
-		<p id="test"></p>
+		<p id="test1"></p>
+		<p id="test2"></p>
+		<p id="test3"></p>
+		<p id="test4"></p>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -18,9 +21,76 @@
 			fobj.add(x);
 		</script>
 		<script>
-			var place = document.getElementById("test");
+			var test1 = document.getElementById("test1");
+			var test2 = document.getElementById("test2");
+			var test3 = document.getElementById("test3");
+			var test4 = document.getElementById("test4");
+			
 			var linexp = new LinearExpression([new Fraction(1, 2), new Fraction(2, 3), new Fraction(-1, 7)]);
-			place.appendChild(MathML.done(MathML.row(linexp.toMathML())));
+			var linobj = new LinearObjective([new Fraction(3, 3), new Fraction(-1, 7), new Fraction(1)]);
+			var linconstr = new LinearConstraint([new Fraction(-1, 7), new Fraction(1), new Fraction(-123)], new Fraction(13, 12));
+			test1.appendChild(MathML.done(MathML.row(linexp.toMathML())));
+			test2.appendChild(MathML.done(MathML.row(linobj.toMathML())));
+			test3.appendChild(MathML.done(MathML.row(linconstr.toMathML())));
 		</script>
+		<math>
+  <mtable columnalign="center">
+    <mtr>
+      <mtd>
+        <mi>o</mi>
+      </mtd>
+    </mtr>
+    <mtr>
+      <mtd>
+        <mrow>
+          <mo fence="true" form="prefix">{</mo>
+          <mtable columnalign="center">
+            <mtr>
+              <mtd>
+                <msub>
+                  <mi>c</mi>
+                  <mn>1</mn>
+                </msub>
+              </mtd>
+            </mtr>
+            <mtr>
+              <mtd>
+                <msub>
+                  <mi>c</mi>
+                  <mn>2</mn>
+                </msub>
+              </mtd>
+            </mtr>
+            <mtr>
+              <mtd>
+                <msub>
+                  <mi>c</mi>
+                  <mn>3</mn>
+                </msub>
+              </mtd>
+            </mtr>
+            <mtr>
+              <mtd>
+                <msub>
+                  <mi>c</mi>
+                  <mn>4</mn>
+                </msub>
+              </mtd>
+            </mtr>
+            <mtr>
+              <mtd>
+                <msub>
+                  <mi>c</mi>
+                  <mn>5</mn>
+                </msub>
+              </mtd>
+            </mtr>
+          </mtable>
+          <mo fence="true" form="postfix"></mo>
+        </mrow>
+      </mtd>
+    </mtr>
+  </mtable>
+</math>
 	</body>
 </html>
