@@ -97,6 +97,13 @@ class MathML {
 		}
 		return mtable;
 	}
+	static brackets(content, left, right) {
+		left = new MathML("mo", textNode(left), {"fence": "true", "form": "prefix"});
+		right = new MathML("mo", textNode(right), {"fence": "true", "form": "postfix"});
+		var m = [left].concat(content)
+		m.push(right);
+		return m;
+	}
 }
 
 BigInt.prototype.toMathML = function() {
