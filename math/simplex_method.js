@@ -130,6 +130,14 @@ class LinearProgrammingProblem {
 		this.constraints = constraints;
 	}
 	toMathML() {
-		
+		var objectiveAsMathML = MathML.row(this.objective.toMathML());
+		var constraintsAsMathML = this.constraints.map((x) => MathML.row(x.toMathML()));
+		var contents = [];
+		for (var i = 0; i < constraintsAsMathML.length; i++) {
+			contents.push([constraintsAsMathML[i]]);
+		}
+		var constraintsAsMathML = MathML.row(MathML.brackets(MathML.table(contents, false, (i) => "left"), "{", ""));
+		var table = MathML.row(MathML.table([[objectiveAsMathML], [constraintsAsMathML]], true, (i) => "left"));
+		return table;
 	}
 }

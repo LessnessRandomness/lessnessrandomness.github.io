@@ -13,6 +13,7 @@
 		<p id="test2"></p>
 		<p id="test3"></p>
 		<p id="test4"></p>
+		<p id="test5"></p>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -25,13 +26,16 @@
 			var test2 = document.getElementById("test2");
 			var test3 = document.getElementById("test3");
 			var test4 = document.getElementById("test4");
+			var test5 = document.getElementById("test5");
 			
 			var linexp = new LinearExpression([new Fraction(1, 2), new Fraction(2, 3), new Fraction(-1, 7)]);
 			var linobj = new LinearObjective([new Fraction(3, 3), new Fraction(-1, 7), new Fraction(1)]);
 			var linconstr = new LinearConstraint([new Fraction(-1, 7), new Fraction(1), new Fraction(-123)], new Fraction(13, 12));
+			var problem = new LinearProgrammingProblem(linobj, [linconstr]);
 			test1.appendChild(MathML.done(MathML.row(linexp.toMathML())));
 			test2.appendChild(MathML.done(MathML.row(linobj.toMathML())));
 			test3.appendChild(MathML.done(MathML.row(linconstr.toMathML())));
+			test4.appendChild(MathML.done(problem.toMathML()));
 			
 			var M = [];
 			for (var i = 0; i < 10; i++) {
@@ -41,7 +45,7 @@
 				}
 			}
 			table = MathML.table(M);
-			test4.appendChild(MathML.done(MathML.row(MathML.brackets(table, "{", ""))));
+			test5.appendChild(MathML.done(MathML.row(MathML.brackets(table, "{", ""))));
 		</script>
 	</body>
 </html>
