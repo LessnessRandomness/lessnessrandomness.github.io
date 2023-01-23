@@ -14,6 +14,7 @@
 		<p id="test3"></p>
 		<p id="test4"></p>
 		<p id="test5"></p>
+		<p id="test6"></p>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -46,6 +47,20 @@
 			}
 			table = MathML.table(M);
 			test5.appendChild(MathML.done(MathML.row(MathML.brackets(table, "{", ""))));
+			
+			var m = [];
+			for (var i = 0; i < 3; i++) {
+				m.push([]);
+				for (var j = 0; j < 4; j++) {
+					m[i].push(new Fraction(i+1, i+j+1).reduce())
+				}
+			}
+			var matrix = new Matrix(m);
+			test6.appendChild(MathML.done(matrix.toMathML()));
+			matrix.gaussEliminationPart1();
+			test6.appendChild(MathML.done(matrix.toMathML()));
+			matrix.gaussEliminationPart2();
+			test6.appendChild(MathML.done(matrix.toMathML()));
 		</script>
 	</body>
 </html>

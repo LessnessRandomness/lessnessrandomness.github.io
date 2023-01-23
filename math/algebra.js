@@ -211,6 +211,16 @@ class Fraction {
 		copy.denom *= b;
 		return (simplify ? copy.reduce() : copy);
 	}
+	invert(simplify = true) {
+		if (this.numer === 0n) {
+			throw new EvalError("Divide By Zero");
+		}
+		var copy = new Fraction(this.denom, this.numer);
+		if (simplify) {
+			copy = copy.reduce();
+		}
+		return copy;
+	}
 	divide(f, simplify = true) {
 		if (f.numer === 0n) {
 			throw new EvalError("Divide By Zero");

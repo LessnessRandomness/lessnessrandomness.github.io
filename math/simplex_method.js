@@ -141,3 +141,92 @@ class LinearProgrammingProblem {
 		return table;
 	}
 }
+
+// Matrix stuff
+
+class Matrix {
+	constructor(matrix) {
+		this.matrix = matrix;
+		this.rows = matrix.length;
+		this.cols = matrix[0].length;
+	}
+	copy() {
+		return (new Matrix(this.matrix));
+	}
+	submatrixWithGivenRows(indexes) {
+		var m = [];
+		for (var i = 0; i < indexes.length; i++) {
+			m.push(this.matrix[indexes[i]]);
+		}
+		return (new Matrix(m));
+	}
+	multiplyRow(row, k) {
+		for (var i = 0; i < this.cols; i++) {
+			this.matrix[row][i] = this.matrix[row][i].multiply(k);
+		}
+	}
+	substractMultipliedRow(row1, row2, k = new Fraction(1)) {
+		for (var i = 0; i < this.cols; i++) {
+			this.matrix[row1][i] = this.matrix[row1][i].substract(this.matrix[row2][i].multiply(k));
+		}
+	}
+	swapRows(row1, row2) {
+		var t;
+		t = this.matrix[row1];
+		this.matrix[row1] = this.matrix[row2];
+		this.matrix[row2] = t;
+	}
+    gaussEliminationPart1() {
+		var currentRow = 0;
+		for (var col = 0; col < this.cols; col++) {
+			// find the necessary nonzero element in the column
+			var nonzero = undefined;
+			for (var row = currentRow; row < this.rows; row++) {
+				if (!this.matrix[row][col].equalTo(new Fraction(0))) {
+					nonzero = row;
+					break;
+				}
+			}
+			if (nonzero !== undefined) {
+				this.swapRows(nonzero, currentRow);
+				this.multiplyRow(currentRow, this.matrix[currentRow][col].invert());
+				for (var i = currentRow + 1; i < this.rows; i++) {
+					this.substractMultipliedRow(i, currentRow, this.matrix[i][col]);
+				}
+				currentRow += 1;
+			}
+		}
+	}
+	gaussEliminationPart2() {
+		for (var row = this.rows - 1; row >= 0; row--) {
+			var leading = undefined;
+			for (var col = 0; col <= this.cols; col++) {
+				if (!this.matrix[row][col].equalTo(new Fraction(0))) {
+					leading = col;
+					break;
+				}
+			}
+			if (leading !== undefined) {
+				for (var i = row - 1; i >= 0; i--) {
+					this.substractMultipliedRow(i, row, this.matrix[i][leading]);
+				}
+			}
+		}
+	}
+
+	toMathML() {
+		var contents = [];
+		for (var i = 0; i < this.rows; i++) {
+			contents.push([]);
+			for (var j = 0; j < this.cols; j++) {
+				contents[i].push(this.matrix[i][j].toMathML())
+			}
+		}
+		var table = MathML.table(contents, true, (x) => "center");
+		return MathML.row(MathML.brackets(table, "(", ")")); 
+	}
+}
+
+
+// SimplexTable, TODO
+
