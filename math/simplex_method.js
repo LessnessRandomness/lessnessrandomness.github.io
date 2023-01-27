@@ -264,12 +264,25 @@ class SimplexTable {
 		}
 		return false;
 	}
+	colsWithNegativeD() {
+		var cols = [];
+		for (var col = 0; col < this.table.cols - 1; col++) {
+			if (this.D(col).lessThan(new Fraction(0))) {
+				cols.push(col);
+			}
+		}
+		return cols;
+	}
 	allPossiblePivots() {
 		var t = [];
-		for (var row = 0; row < this.table.rows - 1; row++) {
-			for (var col = 0; col < this.table.cols - 1; col++) {
-				if (this.isPossiblePivot(row, col)) {
-					t.push([row, col]);
+		var cols = this.colsWithNegativeD();
+		if (cols.length > 0) {
+			for (var row = 0; row < this.table.rows - 1; row++) {
+				for (var i = 0; i < cols.length; i++) {
+					var col = cols[i];
+					if (this.isPossiblePivot(row, col)) {
+						t.push([row, col]);
+					}
 				}
 			}
 		}
@@ -304,9 +317,12 @@ class SimplexTable {
 			var pivot = randomChoice(temp.allPossiblePivots());
 			listOfPivots.push(pivot);
 			temp.moveToNextIteration(pivot[0], pivot[1]);
-			alert(JSON.stringify(pivot));
 		}
-		return {"plan": temp.getPlan(), "objectiveValue": temp.d(), "listOfPivots": listOfPivots};
+		if (temp.colsWithNegativeD().length > 0) {
+			return {"hasSolution": false};
+		} else {
+			return {"hasSolution": true, "plan": temp.getPlan(), "objectiveValue": temp.d(), "listOfPivots": listOfPivots};
+		}
 	}
 	toMathML(row = undefined, col = undefined) {
 		var i, j, mtd;

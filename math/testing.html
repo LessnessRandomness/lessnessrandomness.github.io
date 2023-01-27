@@ -63,14 +63,20 @@
 			matrix.gaussEliminationPart2();
 			test6.appendChild(MathML.done(matrix.toMathML()));
 			
-			var table = [[new Fraction(3), new Fraction(2), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(12)],
-			         [new Fraction(2), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(5)],
-					 [new Fraction(-1), new Fraction(2), new Fraction(0), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(10)],
-					 [new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(1), new Fraction(5)],
-					 [new Fraction(-2), new Fraction(-5), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(0)]];
+			//var table = [[new Fraction(3), new Fraction(2), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(12)],
+			//         [new Fraction(2), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(5)],
+			//		 [new Fraction(-1), new Fraction(2), new Fraction(0), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(10)],
+			//		 [new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(1), new Fraction(5)],
+			//		 [new Fraction(-2), new Fraction(-5), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(0)]];
+			var table = [[new Fraction(-2), new Fraction(-5), new Fraction(0)]];
 			var simplexTable = new SimplexTable(table, [3, 4, 5, 6], [1, 2]);
 			test7.appendChild(MathML.done(simplexTable.toMathML()));
-			test7.appendChild(MathML.done(simplexTable.solution()["objectiveValue"].toMathML()));
+			var solution = simplexTable.solution();
+			if (solution["hasSolution"]) {
+				test7.appendChild(MathML.done(solution["objectiveValue"].toMathML()));
+			} else {
+				test7.appendChild(textNode("Objective function is unbounded"));
+			}
 		</script>
 	</body>
 </html>
