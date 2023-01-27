@@ -153,7 +153,7 @@ class Matrix {
 	copy() {
 		return (new Matrix(this.matrix));
 	}
-	submatrixWithGivenRows(indexes) {
+	submatrixWithGivenRows(indexes) { // will I need this?
 		var m = [];
 		for (var i = 0; i < indexes.length; i++) {
 			m.push(this.matrix[indexes[i]]);
@@ -213,7 +213,6 @@ class Matrix {
 			}
 		}
 	}
-
 	toMathML() {
 		var contents = [];
 		for (var i = 0; i < this.rows; i++) {
@@ -228,5 +227,143 @@ class Matrix {
 }
 
 
-// SimplexTable, TODO
-
+class SimplexTable {
+	constructor(table, basicVariables, startVariables, iteration = 0) {
+		this.table = new Matrix(table);
+		this.basicVariables = basicVariables;
+		this.startVariables = startVariables;
+		this.iteration = iteration;
+	}
+	B(n) {
+		return this.table.matrix[n][this.table.cols-1];
+	}
+	D(n) {
+		return this.table.matrix[this.table.rows-1][n];
+	}
+	d() {
+		return this.table.matrix[this.table.rows-1][this.table.cols-1];
+	}
+	copy() {
+		return (new SimplexTable(this.table.matrix, this.basicVariables, this.startVariables, this.iteration));
+	}
+	isPossiblePivot(row, col) {
+		var zero = new Fraction(0);
+		if (this.D(col).lessThan(zero)) {
+			if (zero.lessThan(this.table.matrix[row][col])) {
+				for (var i = 0; i < this.table.rows - 1; i++) {
+					if (zero.lessThan(this.table.matrix[i][col])) {
+						var t1 = this.B(i).divide(this.table.matrix[i][col]);
+						var t2 = this.B(row).divide(this.table.matrix[row][col]);
+						if (t1.lessThan(t2)) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+	allPossiblePivots() {
+		var t = [];
+		for (var row = 0; row < this.table.rows - 1; row++) {
+			for (var col = 0; col < this.table.cols - 1; col++) {
+				if (this.isPossiblePivot(row, col)) {
+					t.push([row, col]);
+				}
+			}
+		}
+		return t;
+	}
+	moveToNextIteration(row, col) {
+		this.table.multiplyRow(row, this.table.matrix[row][col].invert());
+		for (var i = 0; i < this.table.rows; i++) {
+			if (i !== row) {
+				this.table.substractMultipliedRow(i, row, this.table.matrix[i][col]);
+			}
+			this.basicVariables[row] = col;
+			this.iteration += 1;
+		}
+	}
+	getPlan() {
+		var temp = [];
+		for (var i = 0; i < this.startVariables.length; i++) {
+			var index = this.basicVariables.indexOf(this.startVariables[i]);
+			if (index >= 0) {
+				temp.push(this.B(index));
+			} else {
+				temp.push(new Fraction(0));
+			}
+		}
+		return temp;
+	}
+	solution() {
+		var temp = this.copy();
+		var listOfPivots = [];
+		while (temp.allPossiblePivots().length > 0) {
+			var pivot = randomChoice(temp.allPossiblePivots());
+			listOfPivots.push(pivot);
+			temp.moveToNextIteration(pivot[0], pivot[1]);
+			alert(JSON.stringify(pivot));
+		}
+		return {"plan": temp.getPlan(), "objectiveValue": temp.d(), "listOfPivots": listOfPivots};
+	}
+	toMathML(row = undefined, col = undefined) {
+		var i, j, mtd;
+		var theFirstRow = [];
+		var mi = new MathML("mi", textNode("T"));
+		var mn = new MathML("mn", textNode(this.iteration));
+		var msup = new MathML("msup", [mi, mn]);
+		var cell_T = new MathML("mtd", msup, {"style": "border-right: solid; border-bottom: solid;"});
+		theFirstRow.push(cell_T);
+		for (i = 0; i < this.table.matrix[0].length - 1; i++) {
+			var cell;
+			var style = (i === col) ? "border-bottom: solid; background-color: pink;" : "border-bottom: solid;";
+			cell = new MathML("mtd", Variable.defaultVariables(new Variable(i+1)), {"style": style});
+			theFirstRow.push(cell);
+		}
+		mi = new MathML("mi", textNode("b"));
+		var cell_b = new MathML("mtd", mi, {"style": "border-bottom: solid; border-left: solid;"});
+		theFirstRow.push(cell_b);
+		theFirstRow = new MathML("mtr", theFirstRow);
+		var rows = [theFirstRow];
+		for (i = 0; i < this.table.rows - 1; i++) {
+			var t = Variable.defaultVariables(new Variable(this.basicVariables[i]));
+			var style = (i === row) ? "border-right; solid; background-color: pink;" : "border-right: solid;";
+			var cell_basicVariable = new MathML("mtd", t, {"style": style});
+			var thisRow = [cell_basicVariable];
+			for (j = 0; j < this.table.cols - 1; j++) {
+				if (i === row || j === col) {
+					mtd = new MathML("mtd", this.table.matrix[i][j].toMathML(), {"style": "background-color: pink;"});
+				} else {
+					mtd = new MathML("mtd", this.table.matrix[i][j].toMathML());
+				}
+				thisRow.push(mtd);
+			}
+			style = (i === row) ? "border-left: solid; background-color: pink;" : "border-left: solid;";
+			mtd = new MathML("mtd", this.B(i).toMathML(), {"style": style});
+			thisRow.push(mtd);
+			thisRow = new MathML("mtr", thisRow);
+			rows.push(thisRow);
+		}
+		var theLastRow = [];
+        var justF = new MathML("mi", textNode("f"));
+        justF = new MathML("mtd", justF, {"style": "border-right: solid; border-top: solid;"});
+        theLastRow.push(justF);
+		for (j = 0; j < this.table.cols - 1; j++) {
+			var style = (j === col) ? "border-top: solid; background-color: pink;" : "border-top: solid;";
+			var currentCell = new MathML("mtd", this.D(j).toMathML(), {"style": style});
+			theLastRow.push(currentCell);
+		}
+		var lastCell = new MathML("mtd", this.d().toMathML(), {"style": "border-top: solid; border-left: solid;"});
+		theLastRow.push(lastCell);
+		theLastRow = new MathML("mtr", theLastRow);
+		rows.push(theLastRow);
+		var center = [];
+		for (i = 0; i < this.table.cols; i++) {
+			center.push("center");
+		}
+		center = center.join(" ");
+		return (new MathML("mtable", rows, {"columnalign": center}));
+	}
+}

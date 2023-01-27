@@ -161,10 +161,13 @@ class Fraction {
 		if (fraction instanceof Fraction) {
 			var thisReduced = this.reduce();
 			var thatReduced = fraction.reduce();
-			return thisReduced.numer === thatReduced.numer && thisReduced.denom === thatReduced.denom;
+			return (thisReduced.numer === thatReduced.numer && thisReduced.denom === thatReduced.denom);
 		} else {
 			return false;
 		}
+	}
+	lessThan(fraction) {
+		return (this.numer * fraction.denom < this.denom * fraction.numer);
 	}
 	add(f, simplify = true) {
 		var a, b;
@@ -420,18 +423,6 @@ class Term {
 	maxDegree() {
 		return this.variables.reduce(function(p,c){if (p < c.degree) return c.degree; else return p;}, 1n);
 	}
-	/*
-	maxDegreeOfVariable(variable) {
-		return this.variables.reduce(function(p,c){return (c.variable === variable) ? ((p < c.degree) ? c.degree : p) : p;},1);
-	}
-	onlyHasVariable(variable) {
-		for (var i = 0; i < this.variables.length; i++) {
-			if (this.variables[i].variable != variable) {
-				return false;
-			}
-		}
-		return true;
-	} */
 	toMathML() {
 		var copy = this.copy().simplify();
 		var coef = copy.coefficient();

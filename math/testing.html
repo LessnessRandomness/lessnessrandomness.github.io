@@ -15,6 +15,7 @@
 		<p id="test4"></p>
 		<p id="test5"></p>
 		<p id="test6"></p>
+		<p id="test7"></p>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -61,6 +62,15 @@
 			test6.appendChild(MathML.done(matrix.toMathML()));
 			matrix.gaussEliminationPart2();
 			test6.appendChild(MathML.done(matrix.toMathML()));
+			
+			var table = [[new Fraction(3), new Fraction(2), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(12)],
+			         [new Fraction(2), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(5)],
+					 [new Fraction(-1), new Fraction(2), new Fraction(0), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(10)],
+					 [new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(1), new Fraction(5)],
+					 [new Fraction(-2), new Fraction(-5), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(0), new Fraction(0)]];
+			var simplexTable = new SimplexTable(table, [3, 4, 5, 6], [1, 2]);
+			test7.appendChild(MathML.done(simplexTable.toMathML()));
+			test7.appendChild(MathML.done(simplexTable.solution()["objectiveValue"].toMathML()));
 		</script>
 	</body>
 </html>
