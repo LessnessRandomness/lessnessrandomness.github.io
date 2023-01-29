@@ -39,14 +39,18 @@ class LinearExpression {
 		this.coeffs = coeffs;
 	}
 	copy() {
-		return new LinearExpression(this.coeffs);
+		return (new LinearExpression(this.coeffs));
 	}
 	opposite() {
-		var copy = this.copy();
-		for (var i = 0; i < copy.coeffs.length; i++) {
-			copy.coeffs[i] = copy.coeffs[i].multiply(-1n);
+		return (new LinearExpression(this.coeffs.map((x) => x.opposite())));
+	}
+	replaceVariableWithDifference(n) {
+		var newCoeffs = [];
+		for (var i = 0; i < this.coeffs.length; i++) {
+			newCoeffs.push(this.coeffs[i]);
 		}
-		return copy;
+		newCoeffs.push(this.coeffs[n].opposite());
+		return (new LinearExpression(newCoeffs));
 	}
 	toMathML(namingScheme = Variable.defaultVariables) {
 		var exp = new Expression();
@@ -62,20 +66,24 @@ class LinearExpression {
 //
 
 class LinearObjective {
-	constructor(coeffs, maximise = true) {
-		this.coeffs = coeffs;
+	constructor(linexp, maximise = true) {
+		this.linexp = linexp;
 		this.maximise = maximise;
 	}
 	copy() {
-		return new LinearObjective(this.coeffs, this.maximise);
+		return new LinearObjective(this.linexp, this.maximise);
+	}
+	replaceVariableWithDifference(n) {
+		return (new LinearObjective(this.linexp.replaceVariableWithDifference(n), this.maximise));
 	}
 	opposite() {
 		var t = this.copy();
-		t.coeffs = t.coeffs.map((x) => x.opposite());
+		t.linexp = this.linexp.opposite();
+		t.maximise = !this.maximise;
 		return t;
 	}
 	toMathML() {
-		var m = (new LinearExpression(this.coeffs).toMathML());
+		var m = (this.linexp.toMathML());
 		var arrow = new MathML("mo", textNode("→"));
 		m.push(arrow);
 		var mi = new MathML("mi", textNode(this.maximise ? "max" : "min"));
@@ -87,25 +95,50 @@ class LinearObjective {
 // LinearConstraint
 
 class LinearConstraint {
-	constructor(coeffs, b, sign = "le") {
-		this.coeffs = coeffs;
+	constructor(linexp, b, sign = "le") {
+		this.linexp = linexp;
 		this.b = b;
 		this.sign = sign;
 	}
 	copy() {
-		return new LinearConstraint(this.coeffs, this.b, this.sign);
+		return new LinearConstraint(this.linexp, this.b, this.sign);
 	}
 	revertSign() {
 		var t = this.copy();
 		if (t.sign !== "eq") {
-			t.coeffs = t.coeffs.map((x) => x.opposite());
+			t.linexp = t.linexp.opposite();
 			t.b = t.b.opposite();
 			t.sign = (t.sign === "le") ? "ge" : "le";
 		}
 		return t;
 	}
+	equalityIntoTwoInequalities() {
+		if (this.sign === "eq") {
+			var c1 = new LinearConstraint(this.linexp, this.b, "le");
+			var c2 = new LinearConstraint(this.linexp.opposite(), this.b.opposite(), "le");
+			return [c1, c2];
+		}
+	}
+	replaceVariableWithDifference(n) {
+		return (new LinearConstraint(this.linexp.replaceVariableWithDifference(n), this.b, this.sign));
+	}
+	pointSatisfies(coords) {
+		var value = new Fraction(0);
+		for (var i = 0; i < this.linexp.coeffs.length; i++) {
+			value = value.add(this.linexp.coeffs[i].multiply(coords[i]));
+		}
+		if (t.sign === "eq") {
+			return value.equalTo(this.b);
+		}
+		if (t.sign === "le") {
+			return value.lessOrEqual(this.b);
+		}
+		if (t.sign === "ge") {
+			return this.b.lessOrEqual(value);
+		}
+	}
 	toMathML() {
-		var m = (new LinearExpression(this.coeffs)).toMathML();
+		var m = this.linexp.toMathML();
 		var mo;
 		if (this.sign === "le") {
 			mo = new MathML("mo", textNode("\u2264")); // &le;
@@ -119,26 +152,6 @@ class LinearConstraint {
 		m.push(mo);
 		m = m.concat(this.b.toMathML());
 		return m;
-	}
-}
-
-// LinearProgrammingProblem
-
-class LinearProgrammingProblem {
-	constructor(objective, constraints) {
-		this.objective = objective;
-		this.constraints = constraints;
-	}
-	toMathML() {
-		var objectiveAsMathML = MathML.row(this.objective.toMathML());
-		var constraintsAsMathML = this.constraints.map((x) => MathML.row(x.toMathML()));
-		var contents = [];
-		for (var i = 0; i < constraintsAsMathML.length; i++) {
-			contents.push([constraintsAsMathML[i]]);
-		}
-		var constraintsAsMathML = MathML.row(MathML.brackets(MathML.table(contents, false, (i) => "left"), "{", ""));
-		var table = MathML.row(MathML.table([[objectiveAsMathML], [constraintsAsMathML]], true, (i) => "left"));
-		return table;
 	}
 }
 
@@ -226,7 +239,6 @@ class Matrix {
 	}
 }
 
-
 class SimplexTable {
 	constructor(table, basicVariables, startVariables, iteration = 0) {
 		this.table = new Matrix(table);
@@ -294,7 +306,7 @@ class SimplexTable {
 			if (i !== row) {
 				this.table.substractMultipliedRow(i, row, this.table.matrix[i][col]);
 			}
-			this.basicVariables[row] = col;
+			this.basicVariables[row] = col + 1;
 			this.iteration += 1;
 		}
 	}
@@ -381,5 +393,148 @@ class SimplexTable {
 		}
 		center = center.join(" ");
 		return (new MathML("mtable", rows, {"columnalign": center}));
+	}
+}
+
+
+// Polytope (or simply lots of linear constraints)
+
+class Polytope {
+	constructor(constraints, nonnegativeVariables = []) {
+		this.constraints = constraints; // nonempty array of LinearConstraint
+		this.nonnegativeVariables = nonnegativeVariables; // array
+	}
+	copy() {
+		var t = [];
+		for (var i = 0; i < this.constraints.length; i++) {
+			t.push(this.constraints[i].copy);
+		}
+		return (new Polytope(t, this.nonnegativeVariables));
+	}
+	hasPoint(coords) {
+		for (var c = 0; c < this.constraints.length; c++) {
+			if (!this.constraints[i].pointSatisfies(coords)) {
+				return false;
+			}
+		}
+		for (var i = 0; i < this.nonnegativeVariables.length; i++) {
+			if (coords[this.nonnegativeVariables[i]].lessThan(new Fraction(0))) {
+				return false;
+			}
+		}
+		return true;
+	}
+}
+
+// LinearProgrammingProblem
+
+class LinearProgrammingProblem {
+	constructor(objective, constraints, nonnegativeVariables, integerVariables = []) {
+		this.objective = objective; // LinearObjective
+		this.polytope = new Polytope(constraints, nonnegativeVariables); // Polytope
+		this.integerVariables = integerVariables.sort();
+	}
+	copy() {
+		return (new LinearProgrammingProblem(this.objective.copy(), this.polytope.copy(), this.nonnegativeVariables, this.integerVariables));
+	}
+	canonicalForm() {
+		var newObjective = (this.objective.maximise) ? this.objective.copy() : t.objective.opposite();
+		var newConstraints = [];
+		for (var i = 0; i < this.polytope.constraints.length; i++) {
+			if (this.polytope.constraints[i].sign === "le") {
+				newConstraints.push(this.polytope.constraints[i].copy());
+			}
+			if (this.polytope.constraints[i].sign === "ge") {
+				newConstraints.push(this.polytope.constraints[i].revertSign());
+			}
+			if (this.polytope.constraints[i].sign === "eq") {
+				var pair = this.polytope.constraints[i].equalityIntoTwoInequalities();
+				newConstraints.push(pair[0]);
+				newConstraints.push(pair[1]);
+			}
+		}
+		var newIntegerVariables = this.integerVariables;
+		for (var i = 0; i < this.objective.linexp.coeffs.length; i++) {
+			if (this.polytope.nonnegativeVariables.indexOf(i+1) < 0) {
+				newObjective = newObjective.replaceVariableWithDifference(i);
+				for (var j = 0; j < newConstraints.length; j++) {
+					newConstraints[j] = newConstraints[j].replaceVariableWithDifference(i);
+				}
+				newIntegerVariables.push(newObjective.linexp.coeffs.length);
+			}
+		}
+		var newNonnegativeVariables = [];
+		for (var i = 0; i < newObjective.linexp.coeffs.length; i++) {
+			newNonnegativeVariables.push(i+1);
+		}
+		return (new LinearProgrammingProblem(newObjective, newConstraints, newNonnegativeVariables, newIntegerVariables))
+	}
+	toSimplexTable() {
+		var t = this.canonicalForm();
+		var matrix = [];
+		for (var i = 0; i < t.polytope.constraints.length; i++) {
+			var row = t.polytope.constraints[i].linexp.coeffs;
+			for (var j = 0; j < t.polytope.constraints.length; j++) {
+				row.push((i === j) ? new Fraction(1) : new Fraction(0));
+			}
+			row.push(t.polytope.constraints[i].b);
+			matrix.push(row);
+		}
+		var lastRow = [];
+		for (var i = 0; i < t.objective.linexp.coeffs.length; i++) {
+			lastRow.push(t.objective.linexp.coeffs[i].opposite());
+		}
+		var basicVariables = [];
+		for (var i = 0; i < t.polytope.constraints.length; i++) {
+			lastRow.push(new Fraction(0));
+			basicVariables.push(t.objective.linexp.coeffs.length + i + 1);			
+		}
+		var startVariables = [];
+		for (var i = 0; i < t.objective.linexp.coeffs.length; i++) {
+			startVariables.push(i + 1);
+		}
+		lastRow.push(new Fraction(0));
+		matrix.push(lastRow);
+		return (new SimplexTable(matrix, basicVariables, startVariables));
+	}
+	toMathML() {
+		var i, j;
+		var objectiveAsMathML = MathML.row(this.objective.toMathML());
+		var contents = this.polytope.constraints.map((x) => [MathML.row(x.toMathML())]);
+		var numberOfVariables = this.objective.linexp.coeffs.length;
+		var nonnegativityConstraints = [];
+		if (this.polytope.nonnegativeVariables.length > 0) {
+			var b = true;
+			var nonnegative = [];
+			for (i = 0; i < this.polytope.nonnegativeVariables.length; i++) {
+				if (b) {
+					b = false;
+				} else {
+					nonnegative.push(new MathML("mo", textNode(",")));
+				}
+				nonnegative = nonnegative.concat(Variable.defaultVariables(new Variable(this.polytope.nonnegativeVariables[i])));
+			}
+			nonnegative.push(new MathML("mo", textNode("\u2265"))); // &ge;
+			nonnegative = nonnegative.concat((new Fraction(0)).toMathML());
+			contents.push([MathML.row(nonnegative)]);
+		}
+		if (this.integerVariables.length > 0) {
+			var b = true;
+			var integers = [];
+			for (i = 0; i < this.integerVariables.length; i++) {
+                if (b) {
+                    b = false;
+                } else {
+                    integers.push(new MathML("mo", textNode(",")));
+                }
+                integers = integers.concat(Variable.defaultVariables(new Variable(this.integerVariables[i])));
+            }
+            integers.push(new MathML("mo", textNode("\u2208"))); // &isin;
+            integers.push(new MathML("mi", textNode("\u2124"), {"mathvariant": "normal"})); // &integers;
+			contents.push([MathML.row(integers)]);
+		}
+		var contentsAsMathML = MathML.row(MathML.brackets(MathML.table(contents, false, (i) => "left"), "{", ""));
+		var table = MathML.row(MathML.table([[objectiveAsMathML], [contentsAsMathML]], true, (i) => "left"));
+		return table;
 	}
 }

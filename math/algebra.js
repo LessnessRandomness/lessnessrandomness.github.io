@@ -151,23 +151,36 @@ class Fraction {
 		var g = gcd(copy.numer, copy.denom);
 		copy.numer = copy.numer / g;
 		copy.denom = copy.denom / g;
-		if (copy.denom < 0n && copy.numer > 0n) {
+		if (copy.denom < 0n) {
 			copy.numer = -copy.numer;
 			copy.denom = -copy.denom;
 		}
 		return copy;
 	}
 	equalTo(fraction) {
-		if (fraction instanceof Fraction) {
-			var thisReduced = this.reduce();
-			var thatReduced = fraction.reduce();
-			return (thisReduced.numer === thatReduced.numer && thisReduced.denom === thatReduced.denom);
-		} else {
-			return false;
-		}
+		return (this.numer * fraction.denom === this.denom * fraction.numer);
 	}
 	lessThan(fraction) {
+		if (this.denom < 0n) {
+			this.numer = -this.numer;
+			this.denom = -this.denom;
+		}
+		if (fraction.denom < 0n) {
+			fraction.numer = -fraction.numer;
+			fraction.denom = -fraction.denom;
+		}
 		return (this.numer * fraction.denom < this.denom * fraction.numer);
+	}
+	lessOrEqual(fraction) {
+		if (this.denom < 0n) {
+			this.numer = -this.numer;
+			this.denom = -this.denom;
+		}
+		if (fraction.denom < 0n) {
+			fraction.numer = -fraction.numer;
+			fraction.denom = -fraction.denom;
+		}
+		return (this.numer * fraction.denom <= this.denom * fraction.numer);
 	}
 	add(f, simplify = true) {
 		var a, b;
@@ -213,6 +226,9 @@ class Fraction {
 		copy.numer *= a;
 		copy.denom *= b;
 		return (simplify ? copy.reduce() : copy);
+	}
+	opposite() {
+		return (this.multiply(-1n));
 	}
 	invert(simplify = true) {
 		if (this.numer === 0n) {
