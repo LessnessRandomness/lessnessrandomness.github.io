@@ -75,8 +75,7 @@
 			//	test4.appendChild(textNode("Objective function is unbounded"));
 			//}
 			
-			linexp = new LinearExpression([new Fraction(1, 2), new Fraction(2, 3)]);
-			linobj = new LinearObjective(new LinearExpression([new Fraction(3, 3), new Fraction(-1, 7)], false));
+			linobj = new LinearObjective(new LinearExpression([new Fraction(3, 3), new Fraction(-1, 7)]), false);
 			linconstr_1 = new LinearConstraint(new LinearExpression([new Fraction(-1, 7), new Fraction(1)]), new Fraction(13, 12));
 			linconstr_2 = new LinearConstraint(new LinearExpression([new Fraction(4, 5), new Fraction(0)]), new Fraction(5, 4));
 			linconstr_3 = new LinearConstraint(new LinearExpression([new Fraction(-1), new Fraction(2)]), new Fraction(1));
@@ -85,6 +84,21 @@
 			var solution = problem.toSimplexTable().solution();
 			if (solution["hasSolution"]) {
 				test7.appendChild(MathML.done(solution["objectiveValue"].toMathML()));
+				test7.appendChild(MathML.done(solution["plan"][0].toMathML()));
+				test7.appendChild(MathML.done(solution["plan"][1].toMathML()));
+			} else {
+				test7.appendChild(textNode("Objective function is unbounded"));
+			}
+			
+			var row_1 = [new Fraction(1), new Fraction(1), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(1)];
+			var row_2 = [new Fraction(1), new Fraction(1), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(2)];
+			var row_3 = [new Fraction(-1), new Fraction(-1), new Fraction(1), new Fraction(0), new Fraction(0), new Fraction(-1)];
+			var st = new SimplexTable([row_1, row_2, row_3], [4, 5], [4, 5]);
+			solution = st.solution();
+			test7.appendChild(textNode("--"));
+			if (solution["hasSolution"]) {
+				test7.appendChild(MathML.done(solution["objectiveValue"].toMathML()));
+				test7.appendChild(textNode(""));
 				test7.appendChild(MathML.done(solution["plan"][0].toMathML()));
 				test7.appendChild(MathML.done(solution["plan"][1].toMathML()));
 			} else {

@@ -438,7 +438,7 @@ class LinearProgrammingProblem {
 		return (new LinearProgrammingProblem(this.objective.copy(), this.polytope.copy(), this.nonnegativeVariables, this.integerVariables));
 	}
 	canonicalForm() {
-		var newObjective = (this.objective.maximise) ? this.objective.copy() : t.objective.opposite();
+		var newObjective = (this.objective.maximise) ? this.objective.copy() : this.objective.opposite();
 		var newConstraints = [];
 		for (var i = 0; i < this.polytope.constraints.length; i++) {
 			if (this.polytope.constraints[i].sign === "le") {
