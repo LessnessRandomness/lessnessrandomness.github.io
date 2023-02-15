@@ -240,10 +240,11 @@ class Matrix {
 }
 
 class SimplexTable {
-	constructor(table, basicVariables, startVariables, iteration = 0) {
+	constructor(table, basicVariables, startVariables, artificialVariables = [], iteration = 0) {
 		this.table = new Matrix(table);
 		this.basicVariables = basicVariables;
 		this.startVariables = startVariables;
+		this.artificialVariables = artificialVariables;
 		this.iteration = iteration;
 	}
 	B(n) {
@@ -256,7 +257,7 @@ class SimplexTable {
 		return this.table.matrix[this.table.rows-1][this.table.cols-1];
 	}
 	copy() {
-		return (new SimplexTable(this.table.matrix, this.basicVariables, this.startVariables, this.iteration));
+		return (new SimplexTable(this.table.matrix, this.basicVariables, this.startVariables, this.artificialVariables, this.iteration));
 	}
 	isPossiblePivot(row, col) {
 		var zero = new Fraction(0);
