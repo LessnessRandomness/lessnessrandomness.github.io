@@ -362,17 +362,17 @@ class SimplexTable {
 				m[rows-1][i] = new Fraction(0);
 			}
 		}
-		for (var i = 0; i < temp.startVariables.length; i++) {
-			var index = temp.basicVariables.indexOf(temp.startVariables[i]);
+		for (var i = 0; i < temp.objective.linexp.coeffs.length; i++) {
+			var index = temp.basicVariables.indexOf(i+1);
 			if (index > -1) {
+				var k = m[rows-1][i];
 				for (var j = 0; j < cols; j++) {
-					m[rows-1][j] = m[rows-1][j].add(m[index][j]);
+					m[rows-1][j] = m[rows-1][j].substract(m[index][j].multiply(k));
 				}
 			}
 		}
 		var t = new SimplexTable(m, this.objective, temp.basicVariables, temp.startVariables, []);
 		temp = t.copy();
-		
 		var listOfPivotsII = [];
 		while (temp.allPossiblePivots().length > 0) {
 			var pivot = randomChoice(temp.allPossiblePivots());
