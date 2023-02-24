@@ -9,15 +9,15 @@
 	</head>
 	<body>
 		<p>Testing...</p>
-		<p id="test1"></p>
-		<p id="test2"></p>
-		<p id="test3"></p>
-		<p id="test4"></p>
-		<p id="test5"></p>
-		<p id="test6"></p>
-		<p id="test7"></p>
-		<p id="test8"></p>
-		<p id="test9"></p>
+		<div id="test1"></div>
+		<div id="test2"></div>
+		<div id="test3"></div>
+		<div id="test4"></div>
+		<div id="test5"></div>
+		<div id="test6"></div>
+		<div id="test7"></div>
+		<div id="test8"></div>
+		<div id="test9"></div>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -83,7 +83,7 @@
 			linobj = new LinearObjective(new LinearExpression([new Fraction(1), new Fraction(2)]), true);
 			linconstr_1 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(1), "ge");
 			linconstr_2 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");
-			problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_2], [1, 2]);
+			problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_2], [0, 1]);
 			test7.appendChild(MathML.done(problem.toMathML()));
 			test7.appendChild(MathML.done(problem.canonicalForm().toMathML()));
 			test7.appendChild(MathML.done(problem.toSimplexTable().toMathML()));
@@ -92,27 +92,50 @@
 			
 			var test8 = document.getElementById("test8");
 			var test9 = document.getElementById("test9");
+			for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {
+				T.table.substractMultipliedRow(T.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
+			}
 			test8.appendChild(MathML.done(T.toMathML()));
-			if (solution["phaseI"]) {
-				for (var i = 0; i < solution["listOfPivotsI"].length; i++) {
-					var row = solution["listOfPivotsI"][i][0];
-					var col = solution["listOfPivotsI"][i][1];
-					test8.appendChild(MathML.done(T.toMathML(row, col)));
+			test8.appendChild(textNode(" "));
+			for (var i = 0; i < solution["phaseI"]["listOfPivots"].length; i++) {
+				var row = solution["phaseI"]["listOfPivots"][i][0];
+				var col = solution["phaseI"]["listOfPivots"][i][1];
+				test8.appendChild(MathML.done(T.toMathML(row, col)));
+				test8.appendChild(textNode(" "));
+				T.moveToNextIteration(row, col);
+			}
+			test8.appendChild(MathML.done(T.toMathML()));
+			if (solution["phaseI"]["success"]) {
+				for (var i = 0; i < solution["phaseII"]["columnsToRemove"].length; i++) {
+					T.table.removeColumn(solution["phaseII"]["columnsToRemove"][i]);
+				}
+				T.iteration = 0;
+				test9.appendChild(MathML.done(T.toMathML()));
+				test9.appendChild(textNode(" "));
+				for (var i = 0; i < T.table.cols; i++) {
+					if (i < T.objective.linexp.coeffs.length) {
+						T.table.matrix[T.table.rows-1][i] = T.objective.linexp.coeffs[i].opposite();
+					} else {
+						T.table.matrix[T.table.rows-1][i] = new Fraction(0);
+					}
+				}
+				test9.appendChild(MathML.done(T.toMathML()));
+				test9.appendChild(textNode(" "));
+				for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
+					var r = solution["phaseII"]["rowsToSubstract"][i][0];
+					var k = solution["phaseII"]["rowsToSubstract"][i][1];
+					T.table.substractMultipliedRow(T.table.rows-1, r, k);
+				}
+				test9.appendChild(MathML.done(T.toMathML()));
+				test9.appendChild(textNode(" "));
+				for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
+					var row = solution["phaseII"]["listOfPivots"][i][0];
+					var col = solution["phaseII"]["listOfPivots"][i][1];
+					test9.appendChild(MathML.done(T.toMathML(row, col)));
+					test9.appendChild(textNode(" "));
 					T.moveToNextIteration(row, col);
 				}
-				test8.appendChild(MathML.done(T.toMathML()));
-				if (solution["phaseII"]) {
-					T = solution["tableII"];
-					test9.appendChild(MathML.done(T.toMathML()));
-					for (var i = 0; i < solution["listOfPivotsII"].length; i++) {
-						var row = solution["listOfPivotsII"][i][0];
-						var col = solution["listOfPivotsII"][i][1];
-						test9.appendChild(MathML.done(T.toMathML(row, col)));
-						T.moveToNextIteration(row, col);
-					}
-					test9.appendChild(MathML.done(T.toMathML()));
-				}
-			} else {
+				test9.appendChild(MathML.done(T.toMathML()));
 			}
 			
 			<!-- var row_1 = [new Fraction(1), new Fraction(1), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(1)]; -->

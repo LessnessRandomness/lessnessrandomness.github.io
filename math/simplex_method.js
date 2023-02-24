@@ -55,11 +55,11 @@ class LinearExpression {
 	toMathML(namingScheme = Variable.defaultVariables) {
 		var exp = new Expression();
 		for (var i = 0; i < this.coeffs.length; i++) {
-			var variable = new Expression(new Variable(i+1));
+			var variable = new Expression(new Variable(i));
 			var term = variable.multiply(this.coeffs[i]);
 			exp = exp.add(term);
 		}
-		return exp.toMathML();
+		return exp.toMathML(namingScheme);
 	}
 }
 
@@ -165,14 +165,28 @@ class Matrix {
 	}
 	copy() {
 		var m = [];
-		for (var i = 0; i < this.matrix.length; i++) {
+		for (var i = 0; i < this.rows; i++) {
 			var r = [];
-			for (var j = 0; j < this.matrix[i].length; j++) {
+			for (var j = 0; j < this.cols; j++) {
 				r.push(this.matrix[i][j]);
 			}
 			m.push(r);
 		}
 		return (new Matrix(m));
+	}
+	removeColumn(col) {
+		var m = [];
+		for (var i = 0; i < this.rows; i++) {
+			var r = [];
+			for (var j = 0; j < this.cols; j++) {
+				if (j !== col) {
+					r.push(this.matrix[i][j]);
+				}
+			}
+			m.push(r);
+		}
+		this.matrix = m;
+		this.cols -= 1;
 	}
 	multiplyRow(row, k) {
 		for (var i = 0; i < this.cols; i++) {
@@ -264,6 +278,9 @@ class SimplexTable {
 		}
 		return (new SimplexTable(this.table.copy().matrix, this.objective, bV, this.startVariables, this.artificialVariables, this.iteration));
 	}
+	removeColumn(i) {
+		this.table.removeColumn(i);
+	}
 	isPossiblePivot(row, col) {
 		var zero = new Fraction(0);
 		if (this.D(col).lessThan(zero)) {
@@ -313,7 +330,7 @@ class SimplexTable {
 				this.table.substractMultipliedRow(i, row, this.table.matrix[i][col]);
 			}
 		}
-		this.basicVariables[row] = col + 1;
+		this.basicVariables[row] = col;
 		this.iteration += 1;
 
 	}
@@ -332,57 +349,70 @@ class SimplexTable {
 	solution() {
 		var temp = this.copy();
 		var s = {};
+		s["phaseI"] = {};
+		s["phaseII"] = {};
 		// Phase 1
-		var listOfPivotsI = [];
+		s["phaseI"]["rowsToSubstract"] = [];
+		for (var i = 0; i < temp.artificialVariables.length; i++) {
+			var index = temp.basicVariables.indexOf(temp.artificialVariables[i]);
+			if (index > -1) {
+				temp.table.substractMultipliedRow(temp.table.rows-1, index);
+				s["phaseI"]["rowsToSubstract"].push(index);
+			}
+		}
+		s["phaseI"]["listOfPivots"] = [];
 		while (temp.allPossiblePivots().length > 0) {
 			var pivot = randomChoice(temp.allPossiblePivots());
-			listOfPivotsI.push(pivot);
+			s["phaseI"]["listOfPivots"].push(pivot);
 			temp.moveToNextIteration(pivot[0], pivot[1]);
 		}
+		s["phaseI"]["success"] = (temp.d().lessThan(new Fraction(0)));
 		if (temp.d().lessThan(new Fraction(0))) {
-			return {"phaseI": false, "listOfPivotsI": listOfPivotsI};
+			s["phaseI"]["success"] = false;
+			return s;
+		} else {
+			s["phaseI"]["success"] = true;
+			s["phaseI"]["resultingPlan"] = temp.getPlan();
 		}
-		var planI = temp.getPlan();
 		// Phase 2
-		var m = [];
-		for (var i = 0; i < temp.table.rows; i++) {
-			var t = [];
-			for (var j = 0; j < temp.table.cols; j++) {
-				if (temp.artificialVariables.indexOf(j) < 0) {
-					t.push(temp.table.matrix[i][j]);
-				}
+		s["phaseII"]["columnsToRemove"] = [];
+		for (var i = 0; i < temp.table.cols; i++) {
+			if (temp.artificialVariables.indexOf(i) > -1) {
+				s["phaseII"]["columnsToRemove"].push(i);
+				temp.removeColumn(i);
 			}
-			m.push(t);
 		}
-		var rows = m.length, cols = m[0].length;
-		for (var i = 0; i < cols; i++) {
+		temp.artificialVariables = [];
+		for (var i = 0; i < temp.table.cols; i++) {
 			if (i < temp.objective.linexp.coeffs.length) {
-				m[rows-1][i] = temp.objective.linexp.coeffs[i].opposite();
+				temp.table.matrix[temp.table.rows-1][i] = temp.objective.linexp.coeffs[i].opposite();
 			} else {
-				m[rows-1][i] = new Fraction(0);
+				temp.table.matrix[temp.table.rows-1][i] = new Fraction(0);
 			}
 		}
+		s["phaseII"]["rowsToSubstract"] = [];
 		for (var i = 0; i < temp.objective.linexp.coeffs.length; i++) {
-			var index = temp.basicVariables.indexOf(i+1);
+			var index = temp.basicVariables.indexOf(i);
 			if (index > -1) {
-				var k = m[rows-1][i];
-				for (var j = 0; j < cols; j++) {
-					m[rows-1][j] = m[rows-1][j].substract(m[index][j].multiply(k));
-				}
+				var k = temp.D(i);
+				temp.table.substractMultipliedRow(temp.table.rows-1, index, k);
+				s["phaseII"]["rowsToSubstract"].push([index, k]);
 			}
 		}
-		var t = new SimplexTable(m, this.objective, temp.basicVariables, temp.startVariables, []);
-		temp = t.copy();
-		var listOfPivotsII = [];
+		s["phaseII"]["listOfPivots"] = []
 		while (temp.allPossiblePivots().length > 0) {
 			var pivot = randomChoice(temp.allPossiblePivots());
-			listOfPivotsII.push(pivot);
+			s["phaseII"]["listOfPivots"].push(pivot);
 			temp.moveToNextIteration(pivot[0], pivot[1]);
 		}
 		if (temp.colsWithNegativeD().length > 0) {
-			return {"phaseI": true, "listOfPivotsI": listOfPivotsI, "planI": planI, "phaseII": false, "listOfPivotsII": listOfPivotsII};
+			s["phaseII"]["success"] = false;
+			return s;
 		} else {
-			return {"phaseI": true, "listOfPivotsI": listOfPivotsI, "planI": planI, "phaseII": true, "tableII": t, "listOfPivotsII": listOfPivotsII, "planII": temp.getPlan(), "objectiveValue": temp.d()};
+			s["phaseII"]["success"] = true;
+			s["phaseII"]["resultingPlan"] = temp.getPlan();
+			s["phaseII"]["objectiveValue"] = temp.d();
+			return s;
 		}
 	}
 	toMathML(row = undefined, col = undefined) {
@@ -393,10 +423,10 @@ class SimplexTable {
 		var msup = new MathML("msup", [mi, mn]);
 		var cell_T = new MathML("mtd", msup, {"style": "border-right: solid; border-bottom: solid;"});
 		theFirstRow.push(cell_T);
-		for (i = 0; i < this.table.matrix[0].length - 1; i++) {
+		for (i = 0; i < this.table.cols - 1; i++) {
 			var cell;
 			var style = (i === col) ? "border-bottom: solid; background-color: pink;" : "border-bottom: solid;";
-			cell = new MathML("mtd", Variable.defaultVariables(new Variable(i+1)), {"style": style});
+			cell = new MathML("mtd", Variable.defaultVariables(new Variable(i)), {"style": style});
 			theFirstRow.push(cell);
 		}
 		mi = new MathML("mi", textNode("b"));
@@ -504,7 +534,7 @@ class LinearProgrammingProblem {
 		}
 		var newIntegerVariables = this.integerVariables;
 		for (var i = 0; i < this.objective.linexp.coeffs.length; i++) {
-			if (this.polytope.nonnegativeVariables.indexOf(i+1) < 0) {
+			if (this.polytope.nonnegativeVariables.indexOf(i) < 0) {
 				newObjective = newObjective.replaceVariableWithDifference(i);
 				for (var j = 0; j < newConstraints.length; j++) {
 					newConstraints[j] = newConstraints[j].replaceVariableWithDifference(i);
@@ -514,7 +544,7 @@ class LinearProgrammingProblem {
 		}
 		var newNonnegativeVariables = [];
 		for (var i = 0; i < newObjective.linexp.coeffs.length; i++) {
-			newNonnegativeVariables.push(i+1);
+			newNonnegativeVariables.push(i);
 		}
 		return (new LinearProgrammingProblem(newObjective, newConstraints, newNonnegativeVariables, newIntegerVariables))
 	}
@@ -572,23 +602,15 @@ class LinearProgrammingProblem {
 			lastRow.push(new Fraction(1));
 		}
 		lastRow.push(new Fraction(0));
-		for (var i = 0; i < numberOfInequalities; i++) {
-			if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
-				for (var j = 0; j < lastRow.length; j++) {
-					lastRow[j] = lastRow[j].substract(matrix[i][j]);
-				}
-			}
-		}
-		matrix.push(lastRow);
-		
+		matrix.push(lastRow);		
 		var basicVariables = [];
 		var currentArtificialVariable = 0;
 		for (var i = 0; i < numberOfInequalities; i++) {
 			if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
-				currentArtificialVariable += 1;
 				basicVariables.push(numberOfVariables + numberOfInequalities + currentArtificialVariable);
+				currentArtificialVariable += 1;
 			} else {
-				basicVariables.push(numberOfVariables + i + 1);
+				basicVariables.push(numberOfVariables + i);
 			}
 		}
 		var startVariables = [];

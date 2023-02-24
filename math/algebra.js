@@ -300,15 +300,15 @@ class Variable {
 		return (new Variable(this.variable, this.degree));
 	}
 	static defaultVariables(v) {
-		var variable = v.variable;
+		var index = v.variable + 1;
 		var degree = v.degree;
 		if (degree === 1n) {
 			var a = new MathML("mi", textNode("x"));
-			var i = new MathML("mn", textNode(variable));
+			var i = new MathML("mn", textNode(index));
 			return (new MathML("msub", [a, i]));
 		} else {
 			var a = new MathML("mi", textNode("x"));
-			var n = new MathML("mn", textNode(variable));
+			var n = new MathML("mn", textNode(index));
 			var i = new MathML("mn", textNode(degree));
 			return (new MathML("msubsup", [a, n, i]));
 		}
@@ -356,7 +356,7 @@ class Term {
 		}
 		var newVars = [];
 		for (var v in uniqueVars) {
-			var newVar = new Variable(v, uniqueVars[v])
+			var newVar = new Variable(parseInt(v), uniqueVars[v]) // rewrite somehow without parseInt
 			newVars.push(newVar);
 		}
 		this.variables = newVars;
@@ -439,14 +439,14 @@ class Term {
 	maxDegree() {
 		return this.variables.reduce(function(p,c){if (p < c.degree) return c.degree; else return p;}, 1n);
 	}
-	toMathML() {
+	toMathML(namingScheme = Variable.defaultVariables) {
 		var copy = this.copy().simplify();
 		var coef = copy.coefficient();
 		var m = [];
 		if (coef.abs().numer !== 1n || coef.abs().denom !== 1n) {
 			m = coef.toMathML();
 		}
-		m = this.variables.reduce(function(p,c){return p.concat(c.toMathML());}, m);
+		m = this.variables.reduce(function(p,c){return p.concat(c.toMathML(namingScheme));}, m);
 		return m;
 	}
 }
@@ -656,7 +656,7 @@ class Expression {
 			throw new TypeError("Invalid Argument (" + a.toString() + "): Exponent must be of type BigInt.");
 		}
 	}
-	toMathML() {
+	toMathML(namingScheme = Variable.defaultVariables) {
 		var m = [];
 		var b = false;
 		for (var i = 0; i < this.terms.length; i++) {
@@ -675,7 +675,7 @@ class Expression {
 					term = term.multiply(-1n);
 				}	
 			}
-			m = m.concat(term.toMathML());
+			m = m.concat(term.toMathML(namingScheme));
 		}
 		for (var i = 0; i < this.constants.length; i++) {
 			var constant = this.constants[i];
