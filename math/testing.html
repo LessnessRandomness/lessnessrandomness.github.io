@@ -18,6 +18,7 @@
 		<div id="test7"></div>
 		<div id="test8"></div>
 		<div id="test9"></div>
+		<div id="test10"></div>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -80,6 +81,10 @@
 			//	test4.appendChild(textNode("Objective function is unbounded"));
 			//}
 			
+			var test8 = document.getElementById("test8");
+			var test9 = document.getElementById("test9");
+			var test10 = document.getElementById("test10");
+			
 			linobj = new LinearObjective(new LinearExpression([new Fraction(1), new Fraction(2)]), true);
 			linconstr_1 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(1), "ge");
 			linconstr_2 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");
@@ -89,9 +94,7 @@
 			test7.appendChild(MathML.done(problem.toSimplexTable().toMathML()));
 			var T = problem.toSimplexTable();
 			var solution = T.solution();
-			
-			var test8 = document.getElementById("test8");
-			var test9 = document.getElementById("test9");
+
 			for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {
 				T.table.substractMultipliedRow(T.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
 			}
@@ -137,6 +140,23 @@
 				}
 				test9.appendChild(MathML.done(T.toMathML()));
 			}
+			
+			test10.appendChild(MathML.done(MathML.row(problem.polytope.constraints[1].linexp.toMathML())));
+			var p = problem.polytope.copy();
+			test10.appendChild(MathML.done(p.toMathML()));
+			var info = p.information();
+			if (info["nonempty"]) {
+				alert("This polytope is nonempty.");
+				if (info["bounded"]) {
+					alert("This polytope is bounded");
+					alert("boundaries: " + JSON.stringify(info["boundaries"]));
+				} else {
+					alert("This polytope is unbounded.");
+				}
+			} else {
+				alert("This polytope is empty.");
+			}
+			alert(JSON.stringify(p.allVertices()));
 			
 			<!-- var row_1 = [new Fraction(1), new Fraction(1), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(1)]; -->
 			<!-- var row_2 = [new Fraction(1), new Fraction(1), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(2)]; -->

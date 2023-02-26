@@ -39,7 +39,11 @@ class LinearExpression {
 		this.coeffs = coeffs;
 	}
 	copy() {
-		return (new LinearExpression(this.coeffs));
+		var t = [];
+		for (var i = 0; i < this.coeffs.length; i++) {
+			t.push(this.coeffs[i]);
+		}
+		return (new LinearExpression(t));
 	}
 	opposite() {
 		return (new LinearExpression(this.coeffs.map((x) => x.opposite())));
@@ -71,7 +75,7 @@ class LinearObjective {
 		this.maximise = maximise;
 	}
 	copy() {
-		return new LinearObjective(this.linexp, this.maximise);
+		return new LinearObjective(this.linexp.copy(), this.maximise);
 	}
 	replaceVariableWithDifference(n) {
 		return (new LinearObjective(this.linexp.replaceVariableWithDifference(n), this.maximise));
@@ -101,7 +105,7 @@ class LinearConstraint {
 		this.sign = sign;
 	}
 	copy() {
-		return new LinearConstraint(this.linexp, this.b, this.sign);
+		return new LinearConstraint(this.linexp.copy(), this.b, this.sign);
 	}
 	revertSign() {
 		var t = this.copy();
@@ -122,18 +126,31 @@ class LinearConstraint {
 	replaceVariableWithDifference(n) {
 		return (new LinearConstraint(this.linexp.replaceVariableWithDifference(n), this.b, this.sign));
 	}
+	// for 2D case (two variables)
+	intersection(other) {
+		var a11 = this.linexp.coeffs[0], a12 = this.linexp.coeffs[1], b1 = this.b;
+		var a21 = other.linexp.coeffs[0], a22 = other.linexp.coeffs[1], b2 = other.b;
+		var delta = a11.multiply(a22).add(a12.multiply(a21));
+		if (delta.equalTo(new Fraction(0))) {
+			return undefined;
+		} else {
+			var deltaX = b1.multiply(a22).add(a12.multiply(b2));
+			var deltaY = a11.multiply(b2).add(b1.multiply(a21));
+			return [deltaX.divide(delta), deltaY.divide(delta)];
+		}
+	}
 	pointSatisfies(coords) {
 		var value = new Fraction(0);
 		for (var i = 0; i < this.linexp.coeffs.length; i++) {
 			value = value.add(this.linexp.coeffs[i].multiply(coords[i]));
 		}
-		if (t.sign === "eq") {
+		if (this.sign === "eq") {
 			return value.equalTo(this.b);
 		}
-		if (t.sign === "le") {
+		if (this.sign === "le") {
 			return value.lessOrEqual(this.b);
 		}
-		if (t.sign === "ge") {
+		if (this.sign === "ge") {
 			return this.b.lessOrEqual(value);
 		}
 	}
@@ -486,12 +503,12 @@ class Polytope {
 	copy() {
 		var t = [];
 		for (var i = 0; i < this.constraints.length; i++) {
-			t.push(this.constraints[i].copy);
+			t.push(this.constraints[i].copy());
 		}
 		return (new Polytope(t, this.nonnegativeVariables));
 	}
 	hasPoint(coords) {
-		for (var c = 0; c < this.constraints.length; c++) {
+		for (var i = 0; i < this.constraints.length; i++) {
 			if (!this.constraints[i].pointSatisfies(coords)) {
 				return false;
 			}
@@ -502,6 +519,51 @@ class Polytope {
 			}
 		}
 		return true;
+	}
+	// for 2D case (two variables)
+	allVertices() {
+		var constraints = this.copy().constraints;
+		if (this.nonnegativeVariables.indexOf(0) > -1) {
+			constraints.push(new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(0)]), new Fraction(0), "ge"));
+		}
+		if (this.nonnegativeVariables.indexOf(1) > -1) {
+			constraints.push(new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(0), "ge"));
+		}
+		alert("constraints: " + JSON.stringify(constraints));
+		var vertices = [];
+		for (var i = 0; i < constraints.length; i++) {
+			for (var j = i + 1;j < constraints.length; j++) {
+				var intersectionPoint = constraints[i].intersection(constraints[j]);
+				if (intersectionPoint !== undefined) {
+					if (this.hasPoint(intersectionPoint)) {
+						vertices.push(intersectionPoint);
+					}
+				}
+			}
+		}
+		return vertices;
+	}
+	toMathML() {
+		var contents = this.constraints.map((x) => [MathML.row(x.toMathML())]);
+		var numberOfVariables = this.constraints[0].linexp.coeffs.length;
+		var nonnegativityConstraints = [];
+		if (this.nonnegativeVariables.length > 0) {
+			var b = true;
+			var nonnegative = [];
+			for (i = 0; i < this.nonnegativeVariables.length; i++) {
+				if (b) {
+					b = false;
+				} else {
+					nonnegative.push(new MathML("mo", textNode(",")));
+				}
+				nonnegative = nonnegative.concat(Variable.defaultVariables(new Variable(this.nonnegativeVariables[i])));
+			}
+			nonnegative.push(new MathML("mo", textNode("\u2265"))); // &ge;
+			nonnegative = nonnegative.concat((new Fraction(0)).toMathML());
+			contents.push([MathML.row(nonnegative)]);
+		}
+		var contentsAsMathML = MathML.row(MathML.brackets(MathML.table(contents, false, (i) => "left"), "{", ""));
+		return contentsAsMathML;
 	}
 }
 
@@ -548,6 +610,7 @@ class LinearProgrammingProblem {
 		}
 		return (new LinearProgrammingProblem(newObjective, newConstraints, newNonnegativeVariables, newIntegerVariables))
 	}
+	// for Linear Programming Problems without integer variables
 	toSimplexTable() {
 		var t = this.canonicalForm();
 		var matrix = [], artificialVariables = [];
@@ -561,7 +624,7 @@ class LinearProgrammingProblem {
 			}
 		}
 		for (var i = 0; i < numberOfInequalities; i++) {
-			var row = t.polytope.constraints[i].linexp.coeffs;
+			var row = t.polytope.constraints[i].linexp.copy().coeffs;
 			for (var j = 0; j < numberOfInequalities + numberOfArtificialVariables; j++) {
 				if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
 					for (var k = 0; k < numberOfVariables; k++) {
@@ -660,3 +723,62 @@ class LinearProgrammingProblem {
 		return table;
 	}
 }
+
+// 2d polytopes and 2d linear programming
+
+function unitVector(numberOfDimensions, i) {
+	var t = [];
+	for (var j = 0; j < numberOfDimensions; j++) {
+		if (j === i) {
+			t.push(new Fraction(1));
+		} else {
+			t.push(new Fraction(0));
+		}
+	}
+	return t;
+}
+
+Polytope.prototype.information = function() {
+	var inf = {}, t = [];
+	var numberOfVariables = this.constraints[0].linexp.coeffs.length;
+	for (var i = 0; i < numberOfVariables; i++) {
+		t.push(new Fraction(0));
+	}
+	var objective = new LinearObjective(new LinearExpression(t));
+	var problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
+	var solution = problem.toSimplexTable().solution();
+	if (solution["phaseI"]["success"]) {
+		inf["nonempty"] = true;
+		inf["bounded"] = true;
+		inf["boundaries"] = [];
+		for (var i = 0; i < numberOfVariables; i++) {
+			t = [];
+			var linexp = new LinearExpression(unitVector(numberOfVariables, i));
+			objective = new LinearObjective(linexp);
+			problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
+			solution = problem.toSimplexTable().solution();
+			if (solution["phaseII"]["success"]) {
+				t.push(solution["phaseII"]["objectiveValue"]);
+			} else {
+				t.push(undefined);
+				inf["bounded"] = false;
+			}
+			objective = new LinearObjective(linexp.opposite());
+			problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
+			solution = problem.toSimplexTable().solution();
+			if (solution["phaseII"]["success"]) {
+				t.push(solution["phaseII"]["objectiveValue"]);
+			} else {
+				t.push(undefined);
+				inf["bounded"] = false;
+			}
+			inf["boundaries"].push(t);
+		}
+		return inf;
+	} else {
+		inf["nonempty"] = false;
+		return inf;
+	}
+}
+
+	
