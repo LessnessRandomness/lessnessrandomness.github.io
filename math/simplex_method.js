@@ -130,12 +130,12 @@ class LinearConstraint {
 	intersection(other) {
 		var a11 = this.linexp.coeffs[0], a12 = this.linexp.coeffs[1], b1 = this.b;
 		var a21 = other.linexp.coeffs[0], a22 = other.linexp.coeffs[1], b2 = other.b;
-		var delta = a11.multiply(a22).add(a12.multiply(a21));
+		var delta = a11.multiply(a22).substract(a12.multiply(a21));
 		if (delta.equalTo(new Fraction(0))) {
 			return undefined;
 		} else {
-			var deltaX = b1.multiply(a22).add(a12.multiply(b2));
-			var deltaY = a11.multiply(b2).add(b1.multiply(a21));
+			var deltaX = b1.multiply(a22).substract(a12.multiply(b2));
+			var deltaY = a11.multiply(b2).substract(b1.multiply(a21));
 			return [deltaX.divide(delta), deltaY.divide(delta)];
 		}
 	}
@@ -408,7 +408,7 @@ class SimplexTable {
 			}
 		}
 		s["phaseII"]["rowsToSubstract"] = [];
-		for (var i = 0; i < temp.objective.linexp.coeffs.length; i++) {
+		for (var i = 0; i < temp.table.cols-1; i++) {
 			var index = temp.basicVariables.indexOf(i);
 			if (index > -1) {
 				var k = temp.D(i);
@@ -529,10 +529,9 @@ class Polytope {
 		if (this.nonnegativeVariables.indexOf(1) > -1) {
 			constraints.push(new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(0), "ge"));
 		}
-		alert("constraints: " + JSON.stringify(constraints));
 		var vertices = [];
 		for (var i = 0; i < constraints.length; i++) {
-			for (var j = i + 1;j < constraints.length; j++) {
+			for (var j = i + 1; j < constraints.length; j++) {
 				var intersectionPoint = constraints[i].intersection(constraints[j]);
 				if (intersectionPoint !== undefined) {
 					if (this.hasPoint(intersectionPoint)) {
@@ -570,7 +569,7 @@ class Polytope {
 // LinearProgrammingProblem
 
 class LinearProgrammingProblem {
-	constructor(objective, constraints, nonnegativeVariables, integerVariables = []) {
+	constructor(objective, constraints, nonnegativeVariables = [], integerVariables = []) {
 		this.objective = objective; // LinearObjective
 		this.polytope = new Polytope(constraints, nonnegativeVariables); // Polytope
 		this.integerVariables = integerVariables.sort();
@@ -601,7 +600,9 @@ class LinearProgrammingProblem {
 				for (var j = 0; j < newConstraints.length; j++) {
 					newConstraints[j] = newConstraints[j].replaceVariableWithDifference(i);
 				}
-				newIntegerVariables.push(newObjective.linexp.coeffs.length);
+				if (this.integerVariables.indexOf(i) > -1) {
+					newIntegerVariables.push(newObjective.linexp.coeffs.length);
+				}
 			}
 		}
 		var newNonnegativeVariables = [];
@@ -624,12 +625,17 @@ class LinearProgrammingProblem {
 			}
 		}
 		for (var i = 0; i < numberOfInequalities; i++) {
-			var row = t.polytope.constraints[i].linexp.copy().coeffs;
+			var row;
+			if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
+				row = t.polytope.constraints[i].linexp.opposite().coeffs;
+			} else {
+				row = t.polytope.constraints[i].linexp.copy().coeffs;
+			}
 			for (var j = 0; j < numberOfInequalities + numberOfArtificialVariables; j++) {
 				if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
-					for (var k = 0; k < numberOfVariables; k++) {
-						row[k] = row[k].opposite();
-					}
+					//for (var k = 0; k < numberOfVariables; k++) {
+					//	row[k] = row[k]; //.opposite();
+					//}
 					if (i === j) {
 						row.push(new Fraction(-1));
 					} else {
@@ -754,16 +760,16 @@ Polytope.prototype.information = function() {
 		for (var i = 0; i < numberOfVariables; i++) {
 			t = [];
 			var linexp = new LinearExpression(unitVector(numberOfVariables, i));
-			objective = new LinearObjective(linexp);
+			objective = new LinearObjective(linexp, false);
 			problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
 			solution = problem.toSimplexTable().solution();
 			if (solution["phaseII"]["success"]) {
-				t.push(solution["phaseII"]["objectiveValue"]);
+				t.push(solution["phaseII"]["objectiveValue"].opposite());
 			} else {
 				t.push(undefined);
 				inf["bounded"] = false;
-			}
-			objective = new LinearObjective(linexp.opposite());
+			}			
+			objective = new LinearObjective(linexp);
 			problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
 			solution = problem.toSimplexTable().solution();
 			if (solution["phaseII"]["success"]) {
@@ -781,4 +787,54 @@ Polytope.prototype.information = function() {
 	}
 }
 
-	
+
+function vectorSubstract(a, b) {
+	return [a[0].substract(b[0]), a[1].substract(b[1])];
+}
+function vectorSquared(a) {
+	return a[0].multiply(a[0]).add(a[1].multiply(a[1]));
+}
+
+function compareVectors(v1, v2) {
+	var det = v1[0].multiply(v2[1]).substract(v1[1].multiply(v2[0]));
+	var zero = new Fraction(0);
+	if (det.lessThan(zero)) {
+		return true;
+	}
+	if (zero.lessThan(det)) {
+		return false;
+	}
+	return vectorSquared(v2).lessThan(vectorSquared(v1));
+}
+
+function sortPoints(arrayOfPoints) {
+	var t = [arrayOfPoints[0][0], arrayOfPoints[0][1]];
+	arrayOfPoints.sort((v1, v2) => compareVectors(vectorSubstract(v1, t), vectorSubstract(v2, t)));
+}
+
+function fractionToDecimal(f) {
+	return (Number(f.numer * 1000000n / f.denom)/1000000);
+}
+
+Polytope.prototype.draw = function(place, width) {
+	var info = this.information();
+	if (info["nonempty"]) {
+		if (info["bounded"]) {
+			var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
+			var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
+			var k = width.divide(x2.substract(x1));
+			var height = y2.substract(y1).multiply(k);
+			var draw = SVG().addTo(place).size(fractionToDecimal(width), fractionToDecimal(height));
+			var vertices = this.allVertices();
+			sortPoints(vertices);
+			vertices = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
+			vertices = vertices.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
+			draw.rect(fractionToDecimal(width), fractionToDecimal(height)).fill("none").stroke({width: 1, color: "black"});
+			draw.polygon(vertices).fill('green'); //.stroke({width: 1, color: "black"});
+		} else {
+			throw("This polytope isn't bounded");
+		}
+	} else {
+		throw("This polytope is empty");
+	}
+}

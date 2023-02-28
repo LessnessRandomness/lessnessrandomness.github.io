@@ -18,7 +18,8 @@
 		<div id="test7"></div>
 		<div id="test8"></div>
 		<div id="test9"></div>
-		<div id="test10"></div>
+		<div id="test10"><p></p></div>
+		<div id="test11"></div>
 		<script>
 			var draw = SVG().addTo('body').size(200, 200);
 			var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"});
@@ -84,11 +85,12 @@
 			var test8 = document.getElementById("test8");
 			var test9 = document.getElementById("test9");
 			var test10 = document.getElementById("test10");
+			var test11 = document.getElementById("test11");
 			
 			linobj = new LinearObjective(new LinearExpression([new Fraction(1), new Fraction(2)]), true);
-			linconstr_1 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(1), "ge");
-			linconstr_2 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");
-			problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_2], [0, 1]);
+			var linconstr_1 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(1), "ge");
+			var linconstr_2 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");
+			var problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_2], [0, 1]);
 			test7.appendChild(MathML.done(problem.toMathML()));
 			test7.appendChild(MathML.done(problem.canonicalForm().toMathML()));
 			test7.appendChild(MathML.done(problem.toSimplexTable().toMathML()));
@@ -141,10 +143,35 @@
 				test9.appendChild(MathML.done(T.toMathML()));
 			}
 			
-			test10.appendChild(MathML.done(MathML.row(problem.polytope.constraints[1].linexp.toMathML())));
 			var p = problem.polytope.copy();
-			test10.appendChild(MathML.done(p.toMathML()));
+			test11.appendChild(MathML.done(p.toMathML()));
+			test11.appendChild(textNode(" "));
 			var info = p.information();
+			<!-- if (info["nonempty"]) { -->
+				<!-- alert("This polytope is nonempty."); -->
+				<!-- if (info["bounded"]) { -->
+					<!-- alert("This polytope is bounded"); -->
+					<!-- alert("boundaries: " + JSON.stringify(info["boundaries"])); -->
+				<!-- } else { -->
+					<!-- alert("This polytope is unbounded."); -->
+				<!-- } -->
+			<!-- } else { -->
+				<!-- alert("This polytope is empty."); -->
+			<!-- } -->
+			<!-- alert(JSON.stringify(p.allVertices())); -->
+			
+			p.draw(test11, new Fraction(200));
+			
+			var linconstr_3 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(0)]), new Fraction(2));
+			var linconstr_4 = new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(2));
+			
+			p = new Polytope([linconstr_1, linconstr_2, linconstr_3, linconstr_4]);
+			test11.appendChild(textNode(" "));
+			test11.appendChild(MathML.done(p.toMathML()));
+			test11.appendChild(textNode(" "));
+			p.draw(test11, new Fraction(200));
+			
+			info = p.information();
 			if (info["nonempty"]) {
 				alert("This polytope is nonempty.");
 				if (info["bounded"]) {
@@ -156,7 +183,83 @@
 			} else {
 				alert("This polytope is empty.");
 			}
-			alert(JSON.stringify(p.allVertices()));
+			alert("vertices: " + JSON.stringify(p.allVertices()));
+			
+			//linobj = new LinearObjective(new LinearExpression([new Fraction(2), new Fraction(3)]));
+			//c1 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(1), "ge");
+			//c2 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(6));
+			//c3 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(2)]), new Fraction(8));
+			//c4 = new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(3));
+			//problem = new LinearProgrammingProblem(linobj, [c1, c2, c3, c4], [0, 1]);
+			
+			var linconstr_5 = new LinearConstraint(new LinearExpression([new Fraction(-2), new Fraction(1)]), new Fraction(2));
+			linobj = new LinearObjective(new LinearExpression([new Fraction(-1), new Fraction(0)]));
+			problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_2, linconstr_3, linconstr_4, linconstr_5]);
+			test11.appendChild(textNode(" "));
+			test11.appendChild(MathML.done(problem.toMathML()));
+			test11.appendChild(textNode(" "));
+			test11.appendChild(MathML.done(problem.canonicalForm().toMathML()));
+			
+			var T = problem.toSimplexTable();
+			var solution = T.solution();
+
+			for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {
+				T.table.substractMultipliedRow(T.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
+			}
+			test11.appendChild(MathML.done(T.toMathML()));
+			test11.appendChild(textNode(" "));
+			for (var i = 0; i < solution["phaseI"]["listOfPivots"].length; i++) {
+				var row = solution["phaseI"]["listOfPivots"][i][0];
+				var col = solution["phaseI"]["listOfPivots"][i][1];
+				test11.appendChild(MathML.done(T.toMathML(row, col)));
+				test11.appendChild(textNode(" "));
+				T.moveToNextIteration(row, col);
+			}
+			test11.appendChild(MathML.done(T.toMathML()));
+			if (solution["phaseI"]["success"]) {
+				test11.append(textNode(" /// "));
+				for (var i = 0; i < solution["phaseII"]["columnsToRemove"].length; i++) {
+					test11.appendChild(textNode("removing column" + solution["phaseII"]["columnsToRemove"][i].toString()));
+					T.table.removeColumn(solution["phaseII"]["columnsToRemove"][i]);
+				}
+				T.iteration = 0;
+				test11.appendChild(MathML.done(T.toMathML()));
+				test11.appendChild(textNode(" "));
+				test11.appendChild(textNode("Substracting objective from D row"))
+				for (var i = 0; i < T.table.cols; i++) {
+					if (i < T.objective.linexp.coeffs.length) {
+						T.table.matrix[T.table.rows-1][i] = T.objective.linexp.coeffs[i].opposite();
+					} else {
+						T.table.matrix[T.table.rows-1][i] = new Fraction(0);
+					}
+				}
+				test11.appendChild(MathML.done(T.toMathML()));
+				test11.appendChild(textNode(" "));
+				for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
+					var r = solution["phaseII"]["rowsToSubstract"][i][0];
+					var k = solution["phaseII"]["rowsToSubstract"][i][1];
+					test11.appendChild(textNode("Substracting row " + r.toString() + " multiplied by " + JSON.stringify(k) + " from D row"));
+					T.table.substractMultipliedRow(T.table.rows-1, r, k);
+				}
+				test11.appendChild(MathML.done(T.toMathML()));
+				test11.appendChild(textNode(" "));
+				for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
+					var row = solution["phaseII"]["listOfPivots"][i][0];
+					var col = solution["phaseII"]["listOfPivots"][i][1];
+					test11.appendChild(MathML.done(T.toMathML(row, col)));
+					test11.appendChild(textNode(" "));
+					T.moveToNextIteration(row, col);
+				}
+				test11.appendChild(MathML.done(T.toMathML()));
+				if (solution["phaseII"]["success"]) {
+					alert("bounded");
+				} else {
+					alert("unbounded");
+				}
+			}
+			
+			p = problem.polytope;
+			p.draw(test11, new Fraction(200));
 			
 			<!-- var row_1 = [new Fraction(1), new Fraction(1), new Fraction(-1), new Fraction(0), new Fraction(1), new Fraction(1)]; -->
 			<!-- var row_2 = [new Fraction(1), new Fraction(1), new Fraction(0), new Fraction(1), new Fraction(0), new Fraction(2)]; -->
