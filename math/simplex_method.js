@@ -86,8 +86,8 @@ class LinearObjective {
 		t.maximise = !this.maximise;
 		return t;
 	}
-	toMathML() {
-		var m = (this.linexp.toMathML());
+	toMathML(namingScheme = Variable.defaultVariables) {
+		var m = (this.linexp.toMathML(namingScheme));
 		var arrow = new MathML("mo", textNode("→"));
 		m.push(arrow);
 		var mi = new MathML("mi", textNode(this.maximise ? "max" : "min"));
@@ -154,8 +154,8 @@ class LinearConstraint {
 			return this.b.lessOrEqual(value);
 		}
 	}
-	toMathML() {
-		var m = this.linexp.toMathML();
+	toMathML(namingScheme = Variable.defaultVariables) {
+		var m = this.linexp.toMathML(namingScheme);
 		var mo;
 		if (this.sign === "le") {
 			mo = new MathML("mo", textNode("\u2264")); // &le;
@@ -289,11 +289,17 @@ class SimplexTable {
 		return this.table.matrix[this.table.rows-1][this.table.cols-1];
 	}
 	copy() {
-		var bV = [];
+		var bV = [], sV = [], aV = [];
 		for (var i = 0; i < this.basicVariables.length; i++) {
 			bV.push(this.basicVariables[i]);
 		}
-		return (new SimplexTable(this.table.copy().matrix, this.objective, bV, this.startVariables, this.artificialVariables, this.iteration));
+		for (var i = 0; i < this.startVariables.length; i++) {
+			sV.push(this.startVariables[i]);
+		}
+		for (var i = 0; i < this.artificialVariables.length; i++) {
+			aV.push(this.artificialVariables[i]);
+		}
+		return (new SimplexTable(this.table.copy().matrix, this.objective.copy(), bV, sV, aV, this.iteration));
 	}
 	removeColumn(i) {
 		this.table.removeColumn(i);
@@ -393,12 +399,15 @@ class SimplexTable {
 		}
 		// Phase 2
 		s["phaseII"]["columnsToRemove"] = [];
-		for (var i = 0; i < temp.table.cols; i++) {
+		for (var i = 0; i < temp.table.cols - 1; i++) {
 			if (temp.artificialVariables.indexOf(i) > -1) {
 				s["phaseII"]["columnsToRemove"].push(i);
-				temp.removeColumn(i);
 			}
 		}
+		for (var i = temp.artificialVariables.length - 1; i >= 0; i--) {
+			temp.removeColumn(temp.artificialVariables[i]);
+		}
+		
 		temp.artificialVariables = [];
 		for (var i = 0; i < temp.table.cols; i++) {
 			if (i < temp.objective.linexp.coeffs.length) {
@@ -412,8 +421,10 @@ class SimplexTable {
 			var index = temp.basicVariables.indexOf(i);
 			if (index > -1) {
 				var k = temp.D(i);
-				temp.table.substractMultipliedRow(temp.table.rows-1, index, k);
-				s["phaseII"]["rowsToSubstract"].push([index, k]);
+				if (!k.equalTo(new Fraction(0))) {
+					temp.table.substractMultipliedRow(temp.table.rows-1, index, k);
+					s["phaseII"]["rowsToSubstract"].push([index, k]);
+				}
 			}
 		}
 		s["phaseII"]["listOfPivots"] = []
@@ -433,6 +444,20 @@ class SimplexTable {
 		}
 	}
 	toMathML(row = undefined, col = undefined) {
+		var aV = this.artificialVariables;
+		var variableNames = function(v) {
+			var index = aV.indexOf(v.variable);
+			if (index >= 0) {
+				var a = new MathML("mi", textNode("A"));
+				var i = new MathML("mn", textNode(index + 1));
+				return (new MathML("msub", [a, i]));
+			} else {
+				var a = new MathML("mi", textNode("x"));
+				var i = new MathML("mn", textNode(v.variable + 1));
+				return (new MathML("msub", [a, i]));
+			}
+		};
+		
 		var i, j, mtd;
 		var theFirstRow = [];
 		var mi = new MathML("mi", textNode("T"));
@@ -443,7 +468,7 @@ class SimplexTable {
 		for (i = 0; i < this.table.cols - 1; i++) {
 			var cell;
 			var style = (i === col) ? "border-bottom: solid; background-color: pink;" : "border-bottom: solid;";
-			cell = new MathML("mtd", Variable.defaultVariables(new Variable(i)), {"style": style});
+			cell = new MathML("mtd", variableNames(new Variable(i)), {"style": style});
 			theFirstRow.push(cell);
 		}
 		mi = new MathML("mi", textNode("b"));
@@ -452,7 +477,7 @@ class SimplexTable {
 		theFirstRow = new MathML("mtr", theFirstRow);
 		var rows = [theFirstRow];
 		for (i = 0; i < this.table.rows - 1; i++) {
-			var t = Variable.defaultVariables(new Variable(this.basicVariables[i]));
+			var t = variableNames(new Variable(this.basicVariables[i]));
 			var style = (i === row) ? "border-right: solid; background-color: pink;" : "border-right: solid;";
 			var cell_basicVariable = new MathML("mtd", t, {"style": style});
 			var thisRow = [cell_basicVariable];
@@ -501,11 +526,14 @@ class Polytope {
 		this.nonnegativeVariables = nonnegativeVariables; // array
 	}
 	copy() {
-		var t = [];
+		var t = [], nV = [];
 		for (var i = 0; i < this.constraints.length; i++) {
 			t.push(this.constraints[i].copy());
 		}
-		return (new Polytope(t, this.nonnegativeVariables));
+		for (var i = 0; i < this.nonnegativeVariables.length; i++) {
+			nV.push(this.nonnegativeVariables[i]);
+		}
+		return (new Polytope(t, nV));
 	}
 	hasPoint(coords) {
 		for (var i = 0; i < this.constraints.length; i++) {
@@ -545,7 +573,7 @@ class Polytope {
 	toMathML() {
 		var contents = this.constraints.map((x) => [MathML.row(x.toMathML())]);
 		var numberOfVariables = this.constraints[0].linexp.coeffs.length;
-		var nonnegativityConstraints = [];
+		var nonnegativityConstraints = [];		
 		if (this.nonnegativeVariables.length > 0) {
 			var b = true;
 			var nonnegative = [];
@@ -569,13 +597,40 @@ class Polytope {
 // LinearProgrammingProblem
 
 class LinearProgrammingProblem {
-	constructor(objective, constraints, nonnegativeVariables = [], integerVariables = []) {
+	constructor(objective, constraints, nonnegativeVariables = [], integerVariables = [], artificialVariables = []) {
 		this.objective = objective; // LinearObjective
 		this.polytope = new Polytope(constraints, nonnegativeVariables); // Polytope
 		this.integerVariables = integerVariables.sort();
+		this.artificialVariables = artificialVariables;
 	}
 	copy() {
-		return (new LinearProgrammingProblem(this.objective.copy(), this.polytope.copy(), this.nonnegativeVariables, this.integerVariables));
+		var nV = [], iV = [], tr = [], aV = [];
+		for (var i = 0; i < this.nonnegativeVariables.length; i++) {
+			nV.push(this.nonnegativeVariables[i]);
+		}
+		for (var i = 0; i < this.integerVariables.length; i++) {
+			iV.push(this.integerVariables[i]);
+		}
+		for (var i = 0; i < this.artificialVariables.length; i++) {
+			aV.push(this.artificialVariables[i]);
+		}
+		return (new LinearProgrammingProblem(this.objective.copy(), this.polytope.copy(), nV, iV, aV));
+	}
+	alreadyInCanonicalForm() {
+		if (!this.objective.maximise) {
+			return false;
+		}
+		for (var i = 0; i < this.objective.linexp.coeffs.length; i++) {
+			if (this.polytope.nonnegativeVariables.indexOf(i) < 0) {
+				return false;
+			}
+		}
+		for (var i = 0; i < this.polytope.constraints.length; i++) {
+			if (this.polytope.constraints.sign !== "le") {
+				return false;
+			}
+		}
+		return true;
 	}
 	canonicalForm() {
 		var newObjective = (this.objective.maximise) ? this.objective.copy() : this.objective.opposite();
@@ -594,9 +649,14 @@ class LinearProgrammingProblem {
 			}
 		}
 		var newIntegerVariables = this.integerVariables;
+		var transformations = [];
 		for (var i = 0; i < this.objective.linexp.coeffs.length; i++) {
 			if (this.polytope.nonnegativeVariables.indexOf(i) < 0) {
+				var t = [i];
 				newObjective = newObjective.replaceVariableWithDifference(i);
+				t.push(newObjective.linexp.coeffs.length);
+				t.push(i);
+				transformations.push(t);
 				for (var j = 0; j < newConstraints.length; j++) {
 					newConstraints[j] = newConstraints[j].replaceVariableWithDifference(i);
 				}
@@ -609,11 +669,15 @@ class LinearProgrammingProblem {
 		for (var i = 0; i < newObjective.linexp.coeffs.length; i++) {
 			newNonnegativeVariables.push(i);
 		}
-		return (new LinearProgrammingProblem(newObjective, newConstraints, newNonnegativeVariables, newIntegerVariables))
+		var artificialVariables = [];
+		for (var i = 0; i < this.artificialVariables.length; i++) {
+			artificialVariables.push(this.artificialVariables[i]);
+		}
+		return [new LinearProgrammingProblem(newObjective, newConstraints, newNonnegativeVariables, newIntegerVariables, artificialVariables), transformations];
 	}
 	// for Linear Programming Problems without integer variables
 	toSimplexTable() {
-		var t = this.canonicalForm();
+		var t = this.canonicalForm()[0];
 		var matrix = [], artificialVariables = [];
 		var numberOfVariables = t.polytope.constraints[0].linexp.coeffs.length;
 		var numberOfInequalities = t.polytope.constraints.length;
@@ -624,6 +688,7 @@ class LinearProgrammingProblem {
 				numberOfArtificialVariables += 1;
 			}
 		}
+		var currentArtificialVariable = 0;
 		for (var i = 0; i < numberOfInequalities; i++) {
 			var row;
 			if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
@@ -633,13 +698,10 @@ class LinearProgrammingProblem {
 			}
 			for (var j = 0; j < numberOfInequalities + numberOfArtificialVariables; j++) {
 				if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
-					//for (var k = 0; k < numberOfVariables; k++) {
-					//	row[k] = row[k]; //.opposite();
-					//}
 					if (i === j) {
 						row.push(new Fraction(-1));
 					} else {
-						if (artificialVariables.indexOf(j+numberOfVariables) > -1) {
+						if (j === numberOfInequalities + currentArtificialVariable) {
 							row.push(new Fraction(1));
 						} else {
 							row.push(new Fraction(0));
@@ -654,6 +716,7 @@ class LinearProgrammingProblem {
 				}
 			}
 			if (t.polytope.constraints[i].b.lessThan(new Fraction(0))) {
+				currentArtificialVariable += 1;
 				row.push(t.polytope.constraints[i].b.opposite());
 			} else {
 				row.push(t.polytope.constraints[i].b);
@@ -689,9 +752,23 @@ class LinearProgrammingProblem {
 		return (new SimplexTable(matrix, t.objective, basicVariables, startVariables, artificialVariables));
 	}
 	toMathML() {
+		var aV = this.artificialVariables;
+		var variableNames = function(v) {
+			var index = aV.indexOf(v.variable);
+			if (index > -1) {
+				var a = new MathML("mi", textNode("A"));
+				var i = new MathML("mn", textNode(index + 1));
+				return (new MathML("msub", [a, i]));
+			} else {
+				var a = new MathML("mi", textNode("x"));
+				
+				var i = new MathML("mn", textNode(v.variable + 1));
+				return (new MathML("msub", [a, i]));
+			}
+		};
 		var i, j;
-		var objectiveAsMathML = MathML.row(this.objective.toMathML());
-		var contents = this.polytope.constraints.map((x) => [MathML.row(x.toMathML())]);
+		var objectiveAsMathML = MathML.row(this.objective.toMathML(variableNames));
+		var contents = this.polytope.constraints.map((x) => [MathML.row(x.toMathML(variableNames))]);
 		var numberOfVariables = this.objective.linexp.coeffs.length;
 		var nonnegativityConstraints = [];
 		if (this.polytope.nonnegativeVariables.length > 0) {
@@ -703,7 +780,7 @@ class LinearProgrammingProblem {
 				} else {
 					nonnegative.push(new MathML("mo", textNode(",")));
 				}
-				nonnegative = nonnegative.concat(Variable.defaultVariables(new Variable(this.polytope.nonnegativeVariables[i])));
+				nonnegative = nonnegative.concat(variableNames(new Variable(this.polytope.nonnegativeVariables[i])));
 			}
 			nonnegative.push(new MathML("mo", textNode("\u2265"))); // &ge;
 			nonnegative = nonnegative.concat((new Fraction(0)).toMathML());
@@ -718,7 +795,7 @@ class LinearProgrammingProblem {
                 } else {
                     integers.push(new MathML("mo", textNode(",")));
                 }
-                integers = integers.concat(Variable.defaultVariables(new Variable(this.integerVariables[i])));
+                integers = integers.concat(variableNames(new Variable(this.integerVariables[i])));
             }
             integers.push(new MathML("mo", textNode("\u2208"))); // &isin;
             integers.push(new MathML("mi", textNode("\u2124"), {"mathvariant": "normal"})); // &integers;
@@ -837,4 +914,169 @@ Polytope.prototype.draw = function(place, width) {
 	} else {
 		throw("This polytope is empty");
 	}
+}
+
+// ? Is this function really necessary?
+SimplexTable.prototype.toLinearProgrammingProblem = function() {
+	var objective = [];
+	for (var i = 0; i < this.table.cols - 1; i++) {
+		objective.push(this.D(i).opposite());
+	}
+	objective = new LinearObjective(new LinearExpression(objective));
+	var constraints = [];
+	for (var i = 0; i < this.table.rows - 1; i++) {
+		var t = []
+		for (var j = 0; j < this.table.cols - 1; j++) {
+			t.push(this.table.matrix[i][j]);
+		}
+		constraints.push(new LinearConstraint(new LinearExpression(t), this.B(i), "eq"));
+	}
+	var nonnegativeVariables = [];
+	for (var i = 0; i < this.table.cols - 1; i++) {
+		nonnegativeVariables.push(i);
+	}
+	var artificialVariables = [];
+	for (var i = 0; i < this.artificialVariables.length; i++) {
+		artificialVariables.push(this.artificialVariables[i]);
+	}
+	// 	constructor(objective, constraints, nonnegativeVariables = [], integerVariables = [], transformations = []) {
+	// 	constructor(table, objective, basicVariables, startVariables, artificialVariables = [], iteration = 0) {
+	return (new LinearProgrammingProblem(objective, constraints, nonnegativeVariables, [], artificialVariables));
+}
+
+LinearProgrammingProblem.prototype.solution = function(place) {
+	var paragraph;
+	paragraph = document.createElement("p");
+	paragraph.appendChild(textNode("Dots šāds lineārās programmēšanas uzdevums:"));
+	paragraph.appendChild(document.createElement("br"));
+	paragraph.appendChild(MathML.done(this.toMathML()));
+	place.appendChild(paragraph);
+	var canonicalForm, transformations = [];
+	paragraph = document.createElement("p");
+	if (this.alreadyInCanonicalForm()) {
+		paragraph.appendChild(textNode("Šis LPU jau ir kanoniskajā formā, tāpēc nekas nav jāpārveido."));
+		place.appendChild(paragraph);
+		canonicalForm = this.copy();
+	} else {
+		paragraph.append(textNode("Pārveidojam LPU kanoniskajā formā: "));
+		paragraph.appendChild(document.createElement("br"));
+		var t = this.canonicalForm();
+		canonicalForm = t[0];
+		transformations = t[1];
+		paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
+		place.appendChild(paragraph);
+	}
+	var hasPhaseI = false;
+	for (var i = 0; i < canonicalForm.polytope.constraints.length; i++) {
+		if (canonicalForm.polytope.constraints[i].b.lessThan(new Fraction(0))) {
+			hasPhaseI = true;
+		}
+	}
+	var simplexTable = problem.toSimplexTable();
+	var solution = simplexTable.solution();
+	if (hasPhaseI) {
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Redzams, ka šim LPU ir jārisina palīgproblēma. Izveidojam tabulu:"));
+		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Atņemam no tabulas pēdējās rindas visas rindas, kuras atbilst mākslīgajiem mainīgiem. "));
+		rowsToSubstract = solution["phaseI"]["rowsToSubstract"];
+		if (rowsToSubstract.length === 1) {
+			paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
+		} else {
+			paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + "."));
+			for (var i = 1; i < rowsToSubstract.length - 1; i++) {
+				paragraph.appendChild(textNode(", " + (rowsToSubstract[i] + 1).toString() + "."));
+			}
+			paragraph.appendChild(textNode(" un " + (rowsToSubstract[rowsToSubstract.length - 1] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
+		}
+		for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {			
+			simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
+		}
+		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu palīgproblēmu."));
+		var listOfPivots = solution["phaseI"]["listOfPivots"];
+		for (var i = 0; i < listOfPivots.length; i++) {
+			var row = listOfPivots[i][0];
+			var col = listOfPivots[i][1];
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
+			simplexTable.moveToNextIteration(row, col);
+		}
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Rezultātā iegūta šāda tabula:"));
+		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
+		if (solution["phaseI"]["success"]) {
+			paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns."));
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(textNode("Izmetam kolonnas, kuras atbilst mākslīgajiem mainīgiem, iegūstot šādu tabulu:"));
+			paragraph.appendChild(document.createElement("br"));
+			var columnsToRemove = solution["phaseII"]["columnsToRemove"];
+			for (var i = columnsToRemove.length - 1; i >= 0; i--) {
+				simplexTable.removeColumn(columnsToRemove[i]);
+			}
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Nākamais solis ir tabulas pēdējās rindas aizpildīšana atbilstoši sākotnējā LPU mērķa funkcijai:"));
+			paragraph.appendChild(document.createElement("br"));
+			for (var i = 0; i < simplexTable.table.cols; i++) {
+				if (i < simplexTable.objective.linexp.coeffs.length) {
+					simplexTable.table.matrix[simplexTable.table.rows-1][i] = simplexTable.objective.linexp.coeffs[i].opposite();
+				} else {
+					simplexTable.table.matrix[simplexTable.table.rows-1][i] = new Fraction(0);
+				}
+			}
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Tālāk mērķa funkcijā visus bāzes mainīgos izsakām ar citiem mainīgajiem. Tabulā tas nozīmē - attiecīgajam bāzes mainīgam atbilstošo tabulas rindu pareizina ar vajadzīgo skaitli un atņem no tabulas pēdējās rindas tā, lai pēdējā rindā pozīcijā, kas atbilst šim bāzes mainīgam, sanāktu nulle."));
+			for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
+				var r = solution["phaseII"]["rowsToSubstract"][i][0];
+				var k = solution["phaseII"]["rowsToSubstract"][i][1];
+				paragraph.appendChild(document.createElement("br"));
+				paragraph.appendChild(textNode("Atņemam no pēdējās rindas " + (r + 1).toString() + ". rindu, pareizinātu ar "));
+				paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
+				paragraph.appendChild(textNode("."));
+				simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, r, k);
+			}
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Iegūta šāda tabula:"));
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu doto LPU."));
+			for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
+				var row = solution["phaseII"]["listOfPivots"][i][0];
+				var col = solution["phaseII"]["listOfPivots"][i][1];
+				paragraph.appendChild(document.createElement("br"));
+				paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
+				simplexTable.moveToNextIteration(row, col);
+			}
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Rezultātā iegūta šāda tabula:"));
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			if (solution["phaseII"]["success"]) {
+			} else {
+			}
+		} else {
+			paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša."));
+			return;
+		}
+	}
+	
 }
