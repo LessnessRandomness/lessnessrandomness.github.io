@@ -761,13 +761,13 @@ class LinearProgrammingProblem {
 				return (new MathML("msub", [a, i]));
 			} else {
 				var a = new MathML("mi", textNode("x"));
-				
 				var i = new MathML("mn", textNode(v.variable + 1));
 				return (new MathML("msub", [a, i]));
 			}
 		};
 		var i, j;
 		var objectiveAsMathML = MathML.row(this.objective.toMathML(variableNames));
+		var contents = [];
 		var contents = this.polytope.constraints.map((x) => [MathML.row(x.toMathML(variableNames))]);
 		var numberOfVariables = this.objective.linexp.coeffs.length;
 		var nonnegativityConstraints = [];
@@ -804,6 +804,183 @@ class LinearProgrammingProblem {
 		var contentsAsMathML = MathML.row(MathML.brackets(MathML.table(contents, false, (i) => "left"), "{", ""));
 		var table = MathML.row(MathML.table([[objectiveAsMathML], [contentsAsMathML]], true, (i) => "left"));
 		return table;
+	}
+	static get(place) {
+		var inputFields = {};
+		var buttons = {};
+		var paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Mainīgo skaits: "));
+		inputFields["numberOfVariables"] = document.createElement("input");
+		inputFields["numberOfVariables"].type = "text";
+		paragraph.appendChild(inputFields["numberOfVariables"]);
+		paragraph.appendChild(textNode(" Nevienādību skaits: "));
+		inputFields["numberOfInequalities"] = document.createElement("input");
+		inputFields["numberOfInequalities"].type = "text";
+		paragraph.appendChild(inputFields["numberOfInequalities"]);
+		paragraph.appendChild(textNode(" "));
+		buttons["start"] = document.createElement("button");
+		buttons["start"].textContent = "OK";
+		paragraph.appendChild(buttons["start"]);
+		place.appendChild(paragraph);
+		buttons["start"].onclick = function() {
+			var numberOfVariables = parseInt(inputFields["numberOfVariables"].value);
+			var numberOfInequalities = parseInt(inputFields["numberOfInequalities"].value);
+			if (isNaN(numberOfVariables) || isNaN(numberOfInequalities)) {
+				alert("Ievadi veselus skaitļus, kas lielāki par nulli!");
+				return;
+			}
+			if (numberOfVariables < 1 || numberOfInequalities < 1) {
+				alert("Ievadi veselus skaitļus, kas lielāki par nulli!");
+				return;
+			}
+			inputFields["numberOfVariables"].disabled = true;
+			inputFields["numberOfInequalities"].disabled = true;
+			buttons["start"].disabled = true;
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Izvēlies 'max', ja vēlies maksimizēt mērķa funkciju, vai arī 'min', ja vēlies to minimizēt: "));
+			inputFields["maxOrMin"] = document.createElement("select");
+			var options = ["max", "min"];
+			for (var i = 0; i < options.length; i++) {
+				var op = document.createElement("option");
+				op.value = options[i];
+				op.text = options[i];
+				inputFields["maxOrMin"].appendChild(op);
+			}
+			paragraph.appendChild(inputFields["maxOrMin"]);
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Ievadi mērķa funkcijas koeficientus!"));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			inputFields["objective"] = [];
+			for (var i = 0; i < numberOfVariables; i++) {
+				var c = document.createElement("input");
+				c.type = "text";
+				paragraph.appendChild(c);
+				paragraph.appendChild(textNode(" "));
+				inputFields["objective"].push(c);
+			}
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Ievadi LPU nevienādības (koeficientus, zīmes, brīvos locekļus)!"));
+			place.appendChild(paragraph);
+			inputFields["constraints"] = [];
+			for (var i = 0; i < numberOfInequalities; i++) {
+				var o = {};
+				var t = [];
+				paragraph = document.createElement("p");
+				for (var j = 0; j < numberOfVariables; j++) {
+					var c = document.createElement("input");
+					c.type = "text";
+					paragraph.appendChild(c);
+					paragraph.appendChild(textNode(" "));
+					t.push(c);
+				}
+				o["coeffs"] = t;
+				o["sign"] = document.createElement("select");
+				options = ["<=", "=", ">="];
+				for (var k = 0; k < options.length; k++) {
+					var op = document.createElement("option");
+					op.value = options[k];
+					op.text = options[k];
+					o["sign"].appendChild(op);
+				}
+				var b = document.createElement("input");
+				b.type = "text";
+				o["B"] = b;
+				paragraph.appendChild(o["sign"]);
+				paragraph.appendChild(textNode(" "));
+				paragraph.appendChild(b);
+				inputFields["constraints"].push(o);
+				place.appendChild(paragraph);
+			}
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Ieraksti kārtas numurus (sākot skaitīt no 1 un atdalot ar atstarpi) mainīgajiem, kuriem ir nenegativitātes nosacījumi!"));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			inputFields["nonnegativeVariables"] = document.createElement("input");
+			inputFields["nonnegativeVariables"].type = "text";
+			paragraph.appendChild(inputFields["nonnegativeVariables"]);
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			buttons["final"] = document.createElement("button");
+			buttons["final"].textContent = "OK";
+			paragraph.appendChild(buttons["final"]);
+			place.appendChild(paragraph);
+			buttons["final"].onclick = function() {
+				var maximise = (inputFields["maxOrMin"].value === "max");
+				var coeffs = [];
+				for (var i = 0; i < numberOfVariables; i++) {
+					var fraction = Fraction.parse(inputFields["objective"][i].value);
+					if (fraction === undefined) {
+						alert("Ievadītais mērķa funkcijas " + (i+1).toString() + ". koeficients nav ievadīts pareizi!");
+						return;
+					}
+					coeffs.push(fraction);
+				}
+				var objective = new LinearObjective(new LinearExpression(coeffs), maximise);
+				var constraints = [];
+				for (var i = 0; i < numberOfInequalities; i++) {
+					var coeffs = [];
+					for (var j = 0; j < numberOfVariables; j++) {
+						var fraction = Fraction.parse(inputFields["constraints"][i]["coeffs"][j].value);
+						if (fraction === undefined) {
+							alert((i+1).toString() + ". nevienādības " + (j+1).toString() + ". koeficients nav ievadīts pareizi!");
+							return;
+						}
+						coeffs.push(fraction);
+					}
+					var index = ["<=", "=", ">="].indexOf(inputFields["constraints"][i]["sign"].value);
+					var sign = ["le", "eq", "ge"][index];
+					var fraction = Fraction.parse(inputFields["constraints"][i]["B"].value);
+					if (fraction === undefined) {
+						alert((i+1).toString() + ". nevienādības brīvais loceklis nav ievadīts pareizi!");
+						return;
+					}
+					constraints.push(new LinearConstraint(new LinearExpression(coeffs), fraction, sign));
+				}
+				var nonnegativeVariables = [];
+				var indexes = inputFields["nonnegativeVariables"].value.split(" ");
+				for (var i = 0; i < indexes.length; i++) {
+					if (indexes[i] !== "") {
+						var index = parseInt(indexes[i]);
+						if (isNaN(index)) {
+							alert("Nenegatīvo mainīgo sarakstā ir ieviesusies kļūda!");
+							return;
+						} else {
+							if (index < 1) {
+								alert("Nenegatīvo mainīgo sarakstā ir ieklīdusi vērtība, kas mazāka par 1");
+								return;
+							}
+							if (index > numberOfVariables) {
+								alert("Pavisam ir " + numberOfVariables.toString() + " mainīgie. Sarakstā ir ieklīdusi vērtība, kas ir lielāka par mainīgo skaitu.");
+								return;
+							}
+							if (nonnegativeVariables.indexOf(index - 1) < 0) {
+								nonnegativeVariables.push(index - 1);
+							}
+						}
+					}
+				}
+				nonnegativeVariables.sort();
+				var LPP = new LinearProgrammingProblem(objective, constraints, nonnegativeVariables);
+				alert(JSON.stringify(LPP));
+				inputFields["maxOrMin"].disabled = true;
+				for (var i = 0; i < numberOfVariables; i++) {
+					inputFields["objective"][i].disabled = true;
+				}
+				for (var i = 0; i < numberOfInequalities; i++) {
+					for (var j = 0; j < numberOfVariables; j++) {
+						inputFields["constraints"][i]["coeffs"][j].disabled = true;
+					}
+					inputFields["constraints"][i]["sign"].disabled = true;
+					inputFields["constraints"][i]["B"].disabled = true;
+				}
+				inputFields["nonnegativeVariables"].disabled = true;
+				buttons["final"].disabled = true;
+				LPP.solution(place);
+			}
+		}
 	}
 }
 
@@ -916,32 +1093,6 @@ Polytope.prototype.draw = function(place, width) {
 	}
 }
 
-// ? Is this function really necessary?
-SimplexTable.prototype.toLinearProgrammingProblem = function() {
-	var objective = [];
-	for (var i = 0; i < this.table.cols - 1; i++) {
-		objective.push(this.D(i).opposite());
-	}
-	objective = new LinearObjective(new LinearExpression(objective));
-	var constraints = [];
-	for (var i = 0; i < this.table.rows - 1; i++) {
-		var t = []
-		for (var j = 0; j < this.table.cols - 1; j++) {
-			t.push(this.table.matrix[i][j]);
-		}
-		constraints.push(new LinearConstraint(new LinearExpression(t), this.B(i), "eq"));
-	}
-	var nonnegativeVariables = [];
-	for (var i = 0; i < this.table.cols - 1; i++) {
-		nonnegativeVariables.push(i);
-	}
-	var artificialVariables = [];
-	for (var i = 0; i < this.artificialVariables.length; i++) {
-		artificialVariables.push(this.artificialVariables[i]);
-	}
-	return (new LinearProgrammingProblem(objective, constraints, nonnegativeVariables, [], artificialVariables));
-}
-
 LinearProgrammingProblem.prototype.solution = function(place) {
 	var paragraph;
 	paragraph = document.createElement("p");
@@ -985,6 +1136,8 @@ LinearProgrammingProblem.prototype.solution = function(place) {
 			}
 		}
 		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(textNode("Pārveidojot sākotnējo LPU kanoniskā formā, iegūstam:"));
+		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
 		place.appendChild(paragraph);
 	}
@@ -994,7 +1147,7 @@ LinearProgrammingProblem.prototype.solution = function(place) {
 			hasPhaseI = true;
 		}
 	}
-	var simplexTable = problem.toSimplexTable();
+	var simplexTable = this.toSimplexTable();
 	var solution = simplexTable.solution();
 	if (hasPhaseI) {
 		paragraph = document.createElement("p");

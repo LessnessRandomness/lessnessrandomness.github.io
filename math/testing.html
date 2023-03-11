@@ -51,7 +51,10 @@
 			var linobj = new LinearObjective(new LinearExpression([new Fraction(1), new Fraction(3)]));
 			var problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_11, linconstr_2, linconstr_3, linconstr_4, linconstr_5]);
 			
-			problem.solution(test1);
+			var test = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");
+						
+			LinearProgrammingProblem.get(test1);
+			//problem.solution(test2);
 			
 		</script>
 	</body>
