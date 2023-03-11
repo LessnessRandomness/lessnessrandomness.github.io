@@ -10,52 +10,11 @@
 	<body>
 		<div id="test1"></div>
 		<div id="test2"></div>
-		<div id="test3"></div>
-		<div id="test4"></div>
-		<div id="test5"></div>
-		<div id="test6"></div>
-		<div id="test7"></div>
-		<div id="test8"></div>
-		<div id="test9"></div>
-		<div id="test10"></div>
-		<div id="test11"></div>
-		<!-- <script> -->
-			<!-- var draw = SVG().addTo('body').size(200, 200); -->
-			<!-- var border = draw.rect(200, 200).attr({"stroke": "black", "stroke-width": "1", "fill": "white"}); -->
-			<!-- var fobj = draw.foreignObject(100, 100).move(100, 100); -->
-			<!-- var x = MathML.done(new MathML("mi", textNode("x"))); -->
-			<!-- fobj.add(x); -->
-		<!-- </script> -->
-		<!-- <svg viewBox="0 0 100 30"> -->
-			<!-- <text x="0" y="27" font-size="30" fill="#fa0" font-family="Open Sans">Test</text> -->
-		<!-- </svg> -->
 		<script>
 			var test1 = document.getElementById("test1");
 			var test2 = document.getElementById("test2");
-			var test3 = document.getElementById("test3");
-			var test4 = document.getElementById("test4");
-			var test5 = document.getElementById("test5");
-			var test6 = document.getElementById("test6");
-			var test7 = document.getElementById("test7");			
-			var test8 = document.getElementById("test8");
-			var test9 = document.getElementById("test9");
-			var test10 = document.getElementById("test10");
-			var test11 = document.getElementById("test11");
-			
-			var linconstr_1 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(1), "ge");
-			var linconstr_11 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(2)]), new Fraction(1), "ge");
-			var linconstr_2 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");		
-			var linconstr_3 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(0)]), new Fraction(2));
-			var linconstr_4 = new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(2));
-			var linconstr_5 = new LinearConstraint(new LinearExpression([new Fraction(-2), new Fraction(1)]), new Fraction(2));
-			var linobj = new LinearObjective(new LinearExpression([new Fraction(1), new Fraction(3)]));
-			var problem = new LinearProgrammingProblem(linobj, [linconstr_1, linconstr_11, linconstr_2, linconstr_3, linconstr_4, linconstr_5]);
-			
-			var test = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(1)]), new Fraction(2), "le");
 						
-			LinearProgrammingProblem.get(test1);
-			//problem.solution(test2);
-			
+			LinearProgrammingProblem.calculator(test1);
 		</script>
 	</body>
 </html>
