@@ -812,10 +812,12 @@ class LinearProgrammingProblem {
 		paragraph.appendChild(textNode("Mainīgo skaits: "));
 		inputFields["numberOfVariables"] = document.createElement("input");
 		inputFields["numberOfVariables"].type = "text";
+		inputFields["numberOfVariables"].size = 2;
 		paragraph.appendChild(inputFields["numberOfVariables"]);
 		paragraph.appendChild(textNode(" Nevienādību skaits: "));
 		inputFields["numberOfInequalities"] = document.createElement("input");
 		inputFields["numberOfInequalities"].type = "text";
+		inputFields["numberOfInequalities"].size = 2;
 		paragraph.appendChild(inputFields["numberOfInequalities"]);
 		paragraph.appendChild(textNode(" "));
 		buttons["start"] = document.createElement("button");
@@ -856,6 +858,7 @@ class LinearProgrammingProblem {
 			for (var i = 0; i < numberOfVariables; i++) {
 				var c = document.createElement("input");
 				c.type = "text";
+				c.size = 6;
 				paragraph.appendChild(c);
 				paragraph.appendChild(textNode(" "));
 				inputFields["objective"].push(c);
@@ -872,6 +875,7 @@ class LinearProgrammingProblem {
 				for (var j = 0; j < numberOfVariables; j++) {
 					var c = document.createElement("input");
 					c.type = "text";
+					c.size = 6;
 					paragraph.appendChild(c);
 					paragraph.appendChild(textNode(" "));
 					t.push(c);
@@ -887,6 +891,7 @@ class LinearProgrammingProblem {
 				}
 				var b = document.createElement("input");
 				b.type = "text";
+				b.size = 6;
 				o["B"] = b;
 				paragraph.appendChild(o["sign"]);
 				paragraph.appendChild(textNode(" "));
@@ -900,6 +905,7 @@ class LinearProgrammingProblem {
 			paragraph = document.createElement("p");
 			inputFields["nonnegativeVariables"] = document.createElement("input");
 			inputFields["nonnegativeVariables"].type = "text";
+			inputFields["nonnegativeVariables"].size = 6;
 			paragraph.appendChild(inputFields["nonnegativeVariables"]);
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
