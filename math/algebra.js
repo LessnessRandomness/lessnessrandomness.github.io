@@ -287,6 +287,37 @@ class Fraction {
 			return [m, f];
 		}
 	}
+	static parse(s) {
+		var index = s.indexOf("/");
+		if (index > -1) {
+			try {
+				var numer = BigInt(s.substring(0, index));
+			} catch {
+				var numer = undefined;
+			}
+			try {
+				var denom = BigInt(s.substring(index + 1));
+			} catch {
+				var denom = undefined;
+			}
+			if (numer !== undefined && denom !== undefined) {
+				return (new Fraction(numer, denom));
+			} else {
+				return undefined;
+			}
+		} else {
+			try {
+				var numer = BigInt(s);
+			} catch {
+				var numer = undefined;
+			}
+			if (numer != undefined) {
+				return (new Fraction(numer));
+			} else {
+				return undefined;
+			}
+		}
+	}
 };
 
 // Variable class

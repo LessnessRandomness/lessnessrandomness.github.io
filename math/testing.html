@@ -53,67 +53,6 @@
 			
 			problem.solution(test1);
 			
-			<!-- var T = problem.toSimplexTable(); -->
-			<!-- var solution = T.solution(); -->
-
-			<!-- for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) { -->
-				<!-- T.table.substractMultipliedRow(T.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]); -->
-			<!-- } -->
-			<!-- test11.appendChild(MathML.done(T.toMathML())); -->
-			<!-- test11.appendChild(textNode(" ")); -->
-			<!-- for (var i = 0; i < solution["phaseI"]["listOfPivots"].length; i++) { -->
-				<!-- var row = solution["phaseI"]["listOfPivots"][i][0]; -->
-				<!-- var col = solution["phaseI"]["listOfPivots"][i][1]; -->
-				<!-- test11.appendChild(MathML.done(T.toMathML(row, col))); -->
-				<!-- test11.appendChild(textNode(" ")); -->
-				<!-- T.moveToNextIteration(row, col); -->
-			<!-- } -->
-			<!-- test11.appendChild(MathML.done(T.toMathML())); -->
-			<!-- if (solution["phaseI"]["success"]) { -->
-				<!-- test11.append(textNode(" /// ")); -->
-				<!-- for (var i = 0; i < solution["phaseII"]["columnsToRemove"].length; i++) { -->
-					<!-- test11.appendChild(textNode("removing column" + solution["phaseII"]["columnsToRemove"][i].toString())); -->
-					<!-- T.table.removeColumn(solution["phaseII"]["columnsToRemove"][i]); -->
-				<!-- } -->
-				<!-- T.iteration = 0; -->
-				<!-- test11.appendChild(MathML.done(T.toMathML())); -->
-				<!-- test11.appendChild(textNode(" ")); -->
-				<!-- test11.appendChild(textNode("Substracting objective from D row")) -->
-				<!-- for (var i = 0; i < T.table.cols; i++) { -->
-					<!-- if (i < T.objective.linexp.coeffs.length) { -->
-						<!-- T.table.matrix[T.table.rows-1][i] = T.objective.linexp.coeffs[i].opposite(); -->
-					<!-- } else { -->
-						<!-- T.table.matrix[T.table.rows-1][i] = new Fraction(0); -->
-					<!-- } -->
-				<!-- } -->
-				<!-- test11.appendChild(MathML.done(T.toMathML())); -->
-				<!-- test11.appendChild(textNode(" ")); -->
-				<!-- for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) { -->
-					<!-- var r = solution["phaseII"]["rowsToSubstract"][i][0]; -->
-					<!-- var k = solution["phaseII"]["rowsToSubstract"][i][1]; -->
-					<!-- test11.appendChild(textNode("Substracting row " + r.toString() + " multiplied by " + JSON.stringify(k) + " from D row")); -->
-					<!-- T.table.substractMultipliedRow(T.table.rows-1, r, k); -->
-				<!-- } -->
-				<!-- test11.appendChild(MathML.done(T.toMathML())); -->
-				<!-- test11.appendChild(textNode(" ")); -->
-				<!-- for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) { -->
-					<!-- var row = solution["phaseII"]["listOfPivots"][i][0]; -->
-					<!-- var col = solution["phaseII"]["listOfPivots"][i][1]; -->
-					<!-- test11.appendChild(MathML.done(T.toMathML(row, col))); -->
-					<!-- test11.appendChild(textNode(" ")); -->
-					<!-- T.moveToNextIteration(row, col); -->
-				<!-- } -->
-				<!-- test11.appendChild(MathML.done(T.toMathML())); -->
-				<!-- if (solution["phaseII"]["success"]) { -->
-					<!-- alert("bounded"); -->
-				<!-- } else { -->
-					<!-- alert("unbounded"); -->
-				<!-- } -->
-			<!-- } -->
-			
-			<!-- p = problem.polytope; -->
-			<!-- p.draw(test2, new Fraction(200)); -->
-			
 		</script>
 	</body>
 </html>
