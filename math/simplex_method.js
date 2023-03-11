@@ -964,7 +964,6 @@ class LinearProgrammingProblem {
 				}
 				nonnegativeVariables.sort();
 				var LPP = new LinearProgrammingProblem(objective, constraints, nonnegativeVariables);
-				alert(JSON.stringify(LPP));
 				inputFields["maxOrMin"].disabled = true;
 				for (var i = 0; i < numberOfVariables; i++) {
 					inputFields["objective"][i].disabled = true;
