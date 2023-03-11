@@ -1287,7 +1287,7 @@ LinearProgrammingProblem.prototype.solution = function(place) {
 		if (isMinProblem) {
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode("Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb "));
-			paragraph.appendChild(MathML.done(solution["phaseII"]["objectiveValue"].opposite().toMathML()));
+			paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].opposite().toMathML())));
 			paragraph.appendChild(textNode("."));
 			place.appendChild(paragraph);
 		}
