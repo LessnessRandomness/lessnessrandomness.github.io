@@ -626,7 +626,7 @@ class LinearProgrammingProblem {
 			}
 		}
 		for (var i = 0; i < this.polytope.constraints.length; i++) {
-			if (this.polytope.constraints.sign !== "le") {
+			if (this.polytope.constraints[i].sign !== "le") {
 				return false;
 			}
 		}
