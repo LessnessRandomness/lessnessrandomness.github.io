@@ -805,6 +805,253 @@ class LinearProgrammingProblem {
 		var table = MathML.row(MathML.table([[objectiveAsMathML], [contentsAsMathML]], true, (i) => "left"));
 		return table;
 	}
+	solution(place, language = "LV") {
+		var paragraph;
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Dots šāds lineārās programmēšanas uzdevums:"));
+		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(MathML.done(this.toMathML()));
+		place.appendChild(paragraph);
+		var canonicalForm, transformations = [];
+		var isMinProblem = !this.objective.maximise;
+		paragraph = document.createElement("p");
+		if (this.alreadyInCanonicalForm()) {
+			paragraph.appendChild(textNode("Šis LPU jau ir kanoniskajā formā, tāpēc nekas nav jāpārveido."));
+			place.appendChild(paragraph);
+			canonicalForm = this.copy();
+		} else {
+			var t = this.canonicalForm();
+			canonicalForm = t[0];
+			transformations = t[1];
+			var hasTransformations = (transformations.length > 0);
+			if (hasTransformations) {
+				if (transformations.length > 1) {
+					paragraph.appendChild(textNode("Ir mainīgie bez nenegativitātes nosacījumiem. Katru no tiem aizvietosim ar divu nenegatīvu mainīgo starpību: "));
+				} else {
+					paragraph.appendChild(textNode("Ir mainīgais bez nenegativitātes nosacījuma. To aizvietosim ar divu nenegatīvu mainīgo starpību: "));
+				}
+				for (var i = 0; i < transformations.length; i++) {
+					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
+					paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
+					paragraph.appendChild(textNode(" tiks aizvietots ar "));
+					var difference = new Expression();
+					newVariableOne = new Expression(new Variable(newVariableOne));
+					difference = difference.add(newVariableOne);
+					newVariableTwo = new Expression(new Variable(newVariableTwo));
+					difference = difference.add(newVariableTwo.multiply(new Fraction(-1)));
+					paragraph.appendChild(MathML.done(MathML.row(difference.toMathML())));
+					if (i < transformations.length - 1) {
+						paragraph.appendChild(textNode(", "));
+					} else {
+						paragraph.appendChild(textNode("."));
+					}
+				}
+			}
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(textNode("Pārveidojot sākotnējo LPU kanoniskā formā, iegūstam:"));
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
+			place.appendChild(paragraph);
+		}
+		var hasPhaseI = false;
+		for (var i = 0; i < canonicalForm.polytope.constraints.length; i++) {
+			if (canonicalForm.polytope.constraints[i].b.lessThan(new Fraction(0))) {
+				hasPhaseI = true;
+			}
+		}
+		var simplexTable = this.toSimplexTable();
+		var solution = simplexTable.solution();
+		if (hasPhaseI) {
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Redzams, ka šim LPU ir jārisina palīgproblēma. Izveidojam tabulu:"));
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Atņemam no tabulas pēdējās rindas visas rindas, kuras atbilst mākslīgajiem mainīgiem. "));
+			var rowsToSubstract = solution["phaseI"]["rowsToSubstract"];
+			if (rowsToSubstract.length === 1) {
+				paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
+			} else {
+				paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + "."));
+				for (var i = 1; i < rowsToSubstract.length - 1; i++) {
+					paragraph.appendChild(textNode(", " + (rowsToSubstract[i] + 1).toString() + "."));
+				}
+				paragraph.appendChild(textNode(" un " + (rowsToSubstract[rowsToSubstract.length - 1] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
+			}
+			for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {			
+				simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
+			}
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu palīgproblēmu."));
+			var listOfPivots = solution["phaseI"]["listOfPivots"];
+			for (var i = 0; i < listOfPivots.length; i++) {
+				var row = listOfPivots[i][0];
+				var col = listOfPivots[i][1];
+				paragraph.appendChild(document.createElement("br"));
+				paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
+				simplexTable.moveToNextIteration(row, col);
+			}
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Rezultātā iegūta šāda tabula:"));
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
+			if (solution["phaseI"]["success"]) {
+				paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns."));
+				paragraph.appendChild(document.createElement("br"));
+				paragraph.appendChild(textNode("Izmetam kolonnas, kuras atbilst mākslīgajiem mainīgiem, iegūstot šādu tabulu:"));
+				paragraph.appendChild(document.createElement("br"));
+				var columnsToRemove = solution["phaseII"]["columnsToRemove"];
+				for (var i = columnsToRemove.length - 1; i >= 0; i--) {
+					simplexTable.removeColumn(columnsToRemove[i]);
+				}
+				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+				place.appendChild(paragraph);
+				paragraph = document.createElement("p");
+				paragraph.appendChild(textNode("Nākamais solis ir tabulas pēdējās rindas aizpildīšana atbilstoši mērķa funkcijai:"));
+				paragraph.appendChild(document.createElement("br"));
+				for (var i = 0; i < simplexTable.table.cols; i++) {
+					if (i < simplexTable.objective.linexp.coeffs.length) {
+						simplexTable.table.matrix[simplexTable.table.rows-1][i] = simplexTable.objective.linexp.coeffs[i].opposite();
+					} else {
+						simplexTable.table.matrix[simplexTable.table.rows-1][i] = new Fraction(0);
+					}
+				}
+				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+				place.appendChild(paragraph);
+				paragraph = document.createElement("p");
+				paragraph.appendChild(textNode("Tālāk mērķa funkcijā visus bāzes mainīgos izsakām ar citiem mainīgajiem. Tabulā tas nozīmē - attiecīgajam bāzes mainīgam atbilstošo tabulas rindu pareizina ar vajadzīgo skaitli un atņem no tabulas pēdējās rindas tā, lai pēdējā rindā pozīcijā, kas atbilst šim bāzes mainīgam, sanāktu nulle."));
+				for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
+					var r = solution["phaseII"]["rowsToSubstract"][i][0];
+					var k = solution["phaseII"]["rowsToSubstract"][i][1];
+					paragraph.appendChild(document.createElement("br"));
+					paragraph.appendChild(textNode("Atņemam no pēdējās rindas " + (r + 1).toString() + ". rindu, pareizinātu ar "));
+					paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
+					paragraph.appendChild(textNode("."));
+					simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, r, k);
+				}
+				place.appendChild(paragraph);
+			} else {
+				paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša."));
+				return;
+			}
+		} else {
+			for (var i = 0; i < simplexTable.table.cols; i++) {
+				if (i < simplexTable.objective.linexp.coeffs.length) {
+					simplexTable.table.matrix[simplexTable.table.rows-1][i] = simplexTable.objective.linexp.coeffs[i].opposite();
+				} else {
+					simplexTable.table.matrix[simplexTable.table.rows-1][i] = new Fraction(0);
+				}
+			}
+		}
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Iegūta šāda tabula:"));
+		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu doto LPU."));
+		for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
+			var row = solution["phaseII"]["listOfPivots"][i][0];
+			var col = solution["phaseII"]["listOfPivots"][i][1];
+			paragraph.appendChild(document.createElement("br"));
+			paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
+			simplexTable.moveToNextIteration(row, col);
+		}
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
+		paragraph.appendChild(textNode("Rezultātā iegūta šāda tabula:"));
+		paragraph.appendChild(document.createElement("br"));
+		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+		place.appendChild(paragraph);
+		if (solution["phaseII"]["success"]) {
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Redzams, ka iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir "));
+			paragraph.appendChild(MathML.done(solution["phaseII"]["objectiveValue"].toMathML()));
+			paragraph.appendChild(textNode(", kā arī optimālo plānu, kas ir "));
+			var optimalPlan = solution["phaseII"]["resultingPlan"];
+			var t1 = [], t2 = [];
+			for (var i = 0; i < optimalPlan.length; i++) {
+				t1 = t1.concat(Variable.defaultVariables(new Variable(i)));
+				t2 = t2.concat(optimalPlan[i].toMathML());
+				if (i < optimalPlan.length - 1) {
+					t1.push(new MathML("mo", textNode(",")));
+					t2.push(new MathML("mo", textNode(",")));
+				}
+			}
+			var t = MathML.brackets(t1, "(", ")");
+			t.push(new MathML("mo", textNode("=")));
+			t = t.concat(MathML.brackets(t2, "(", ")"));
+			paragraph.appendChild(MathML.done(MathML.row(t)));
+			paragraph.appendChild(textNode("."));
+			place.appendChild(paragraph);
+			if (isMinProblem) {
+				paragraph = document.createElement("p");
+				paragraph.appendChild(textNode("Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb "));
+				paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].opposite().toMathML())));
+				paragraph.appendChild(textNode("."));
+				place.appendChild(paragraph);
+			}
+			if (hasTransformations) {
+				paragraph = document.createElement("p");
+				paragraph.appendChild(textNode("Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu."));
+				place.appendChild(paragraph);
+				var variables = [], newOptimalPlan = [];
+				var variablesToRemove = transformations.map((x) => x[2]);
+				for (var i = 0; i < solution["phaseII"]["resultingPlan"].length; i++) {
+					if (variablesToRemove.indexOf(i) === -1) {
+						variables.push(i);
+					}
+				}
+				for (var i = 0; i < transformations.length; i++) {
+					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
+					paragraph = document.createElement("p");
+					paragraph.appendChild(textNode("Mainīgā "));
+					paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
+					paragraph.appendChild(textNode(" vērtība sanāk "));
+					var difference = new Expression();
+					var t1 = new Expression(new Variable(newVariableOne));
+					difference = difference.add(t1);
+					var t2 = new Expression(new Variable(newVariableTwo));
+					difference = difference.add(t2.multiply(new Fraction(-1)));
+					math = difference.toMathML();
+					math.push(new MathML("mo", textNode("=")));
+					var value = optimalPlan[newVariableOne].substract(optimalPlan[newVariableTwo]);
+					newOptimalPlan[oldVariable] = value;
+					math = math.concat(value.toMathML());
+					paragraph.appendChild(MathML.done(MathML.row(math)));
+					place.appendChild(paragraph);
+				}
+				paragraph = document.createElement("p");
+				var t1 = [], t2 = [];
+				for (var i = 0; i < newOptimalPlan.length; i++) {
+					t1 = t1.concat(Variable.defaultVariables(new Variable(i)));
+					t2 = t2.concat(newOptimalPlan[i].toMathML());
+					if (i < newOptimalPlan.length - 1) {
+						t1.push(new MathML("mo", textNode(",")));
+						t2.push(new MathML("mo", textNode(",")));
+					}
+				}
+				var t = MathML.brackets(t1, "(", ")");
+				t.push(new MathML("mo", textNode("=")));
+				t = t.concat(MathML.brackets(t2, "(", ")"));
+				paragraph.appendChild(textNode("Sākotnējā LPU optimālais plāns ir "));
+				paragraph.appendChild(MathML.done(MathML.row(t)));
+				paragraph.appendChild(textNode("."));
+				place.appendChild(paragraph);
+			}
+		} else {
+			paragraph = document.createElement("p");
+			paragraph.appendChild(textNode("Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota."));
+			place.appendChild(paragraph);
+		}
+	}
 	static calculator(place) {
 		var inputFields = {};
 		var buttons = {};
@@ -1095,253 +1342,5 @@ Polytope.prototype.draw = function(place, width) {
 		}
 	} else {
 		throw("This polytope is empty");
-	}
-}
-
-LinearProgrammingProblem.prototype.solution = function(place) {
-	var paragraph;
-	paragraph = document.createElement("p");
-	paragraph.appendChild(textNode("Dots šāds lineārās programmēšanas uzdevums:"));
-	paragraph.appendChild(document.createElement("br"));
-	paragraph.appendChild(MathML.done(this.toMathML()));
-	place.appendChild(paragraph);
-	var canonicalForm, transformations = [];
-	var isMinProblem = !this.objective.maximise;
-	paragraph = document.createElement("p");
-	if (this.alreadyInCanonicalForm()) {
-		paragraph.appendChild(textNode("Šis LPU jau ir kanoniskajā formā, tāpēc nekas nav jāpārveido."));
-		place.appendChild(paragraph);
-		canonicalForm = this.copy();
-	} else {
-		var t = this.canonicalForm();
-		canonicalForm = t[0];
-		transformations = t[1];
-		var hasTransformations = (transformations.length > 0);
-		if (hasTransformations) {
-			if (transformations.length > 1) {
-				paragraph.appendChild(textNode("Ir mainīgie bez nenegativitātes nosacījumiem. Katru no tiem aizvietosim ar divu nenegatīvu mainīgo starpību: "));
-			} else {
-				paragraph.appendChild(textNode("Ir mainīgais bez nenegativitātes nosacījuma. To aizvietosim ar divu nenegatīvu mainīgo starpību: "));
-			}
-			for (var i = 0; i < transformations.length; i++) {
-				var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
-				paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
-				paragraph.appendChild(textNode(" tiks aizvietots ar "));
-				var difference = new Expression();
-				newVariableOne = new Expression(new Variable(newVariableOne));
-				difference = difference.add(newVariableOne);
-				newVariableTwo = new Expression(new Variable(newVariableTwo));
-				difference = difference.add(newVariableTwo.multiply(new Fraction(-1)));
-				paragraph.appendChild(MathML.done(MathML.row(difference.toMathML())));
-				if (i < transformations.length - 1) {
-					paragraph.appendChild(textNode(", "));
-				} else {
-					paragraph.appendChild(textNode("."));
-				}
-			}
-		}
-		paragraph.appendChild(document.createElement("br"));
-		paragraph.appendChild(textNode("Pārveidojot sākotnējo LPU kanoniskā formā, iegūstam:"));
-		paragraph.appendChild(document.createElement("br"));
-		paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
-		place.appendChild(paragraph);
-	}
-	var hasPhaseI = false;
-	for (var i = 0; i < canonicalForm.polytope.constraints.length; i++) {
-		if (canonicalForm.polytope.constraints[i].b.lessThan(new Fraction(0))) {
-			hasPhaseI = true;
-		}
-	}
-	var simplexTable = this.toSimplexTable();
-	var solution = simplexTable.solution();
-	if (hasPhaseI) {
-		paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Redzams, ka šim LPU ir jārisina palīgproblēma. Izveidojam tabulu:"));
-		paragraph.appendChild(document.createElement("br"));
-		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-		place.appendChild(paragraph);
-		paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Atņemam no tabulas pēdējās rindas visas rindas, kuras atbilst mākslīgajiem mainīgiem. "));
-		rowsToSubstract = solution["phaseI"]["rowsToSubstract"];
-		if (rowsToSubstract.length === 1) {
-			paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
-		} else {
-			paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + "."));
-			for (var i = 1; i < rowsToSubstract.length - 1; i++) {
-				paragraph.appendChild(textNode(", " + (rowsToSubstract[i] + 1).toString() + "."));
-			}
-			paragraph.appendChild(textNode(" un " + (rowsToSubstract[rowsToSubstract.length - 1] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
-		}
-		for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {			
-			simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
-		}
-		paragraph.appendChild(document.createElement("br"));
-		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-		place.appendChild(paragraph);
-		paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu palīgproblēmu."));
-		var listOfPivots = solution["phaseI"]["listOfPivots"];
-		for (var i = 0; i < listOfPivots.length; i++) {
-			var row = listOfPivots[i][0];
-			var col = listOfPivots[i][1];
-			paragraph.appendChild(document.createElement("br"));
-			paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
-			simplexTable.moveToNextIteration(row, col);
-		}
-		place.appendChild(paragraph);
-		paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Rezultātā iegūta šāda tabula:"));
-		paragraph.appendChild(document.createElement("br"));
-		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-		place.appendChild(paragraph);
-		paragraph = document.createElement("p");
-		if (solution["phaseI"]["success"]) {
-			paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns."));
-			paragraph.appendChild(document.createElement("br"));
-			paragraph.appendChild(textNode("Izmetam kolonnas, kuras atbilst mākslīgajiem mainīgiem, iegūstot šādu tabulu:"));
-			paragraph.appendChild(document.createElement("br"));
-			var columnsToRemove = solution["phaseII"]["columnsToRemove"];
-			for (var i = columnsToRemove.length - 1; i >= 0; i--) {
-				simplexTable.removeColumn(columnsToRemove[i]);
-			}
-			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-			place.appendChild(paragraph);
-			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Nākamais solis ir tabulas pēdējās rindas aizpildīšana atbilstoši mērķa funkcijai:"));
-			paragraph.appendChild(document.createElement("br"));
-			for (var i = 0; i < simplexTable.table.cols; i++) {
-				if (i < simplexTable.objective.linexp.coeffs.length) {
-					simplexTable.table.matrix[simplexTable.table.rows-1][i] = simplexTable.objective.linexp.coeffs[i].opposite();
-				} else {
-					simplexTable.table.matrix[simplexTable.table.rows-1][i] = new Fraction(0);
-				}
-			}
-			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-			place.appendChild(paragraph);
-			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Tālāk mērķa funkcijā visus bāzes mainīgos izsakām ar citiem mainīgajiem. Tabulā tas nozīmē - attiecīgajam bāzes mainīgam atbilstošo tabulas rindu pareizina ar vajadzīgo skaitli un atņem no tabulas pēdējās rindas tā, lai pēdējā rindā pozīcijā, kas atbilst šim bāzes mainīgam, sanāktu nulle."));
-			for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
-				var r = solution["phaseII"]["rowsToSubstract"][i][0];
-				var k = solution["phaseII"]["rowsToSubstract"][i][1];
-				paragraph.appendChild(document.createElement("br"));
-				paragraph.appendChild(textNode("Atņemam no pēdējās rindas " + (r + 1).toString() + ". rindu, pareizinātu ar "));
-				paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
-				paragraph.appendChild(textNode("."));
-				simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, r, k);
-			}
-			place.appendChild(paragraph);
-		} else {
-			paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša."));
-			return;
-		}
-	} else {
-		for (var i = 0; i < simplexTable.table.cols; i++) {
-			if (i < simplexTable.objective.linexp.coeffs.length) {
-				simplexTable.table.matrix[simplexTable.table.rows-1][i] = simplexTable.objective.linexp.coeffs[i].opposite();
-			} else {
-				simplexTable.table.matrix[simplexTable.table.rows-1][i] = new Fraction(0);
-			}
-		}
-	}
-	paragraph = document.createElement("p");
-	paragraph.appendChild(textNode("Iegūta šāda tabula:"));
-	paragraph.appendChild(document.createElement("br"));
-	paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-	place.appendChild(paragraph);
-	paragraph = document.createElement("p");
-	paragraph.appendChild(textNode("Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu doto LPU."));
-	for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
-		var row = solution["phaseII"]["listOfPivots"][i][0];
-		var col = solution["phaseII"]["listOfPivots"][i][1];
-		paragraph.appendChild(document.createElement("br"));
-		paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
-		simplexTable.moveToNextIteration(row, col);
-	}
-	place.appendChild(paragraph);
-	paragraph = document.createElement("p");
-	paragraph.appendChild(textNode("Rezultātā iegūta šāda tabula:"));
-	paragraph.appendChild(document.createElement("br"));
-	paragraph.appendChild(MathML.done(simplexTable.toMathML()));
-	place.appendChild(paragraph);
-	if (solution["phaseII"]["success"]) {
-		paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Redzams, ka iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir "));
-		paragraph.appendChild(MathML.done(solution["phaseII"]["objectiveValue"].toMathML()));
-		paragraph.appendChild(textNode(", kā arī optimālo plānu, kas ir "));
-		var optimalPlan = solution["phaseII"]["resultingPlan"];
-		var t1 = [], t2 = [];
-		for (var i = 0; i < optimalPlan.length; i++) {
-			t1 = t1.concat(Variable.defaultVariables(new Variable(i)));
-			t2 = t2.concat(optimalPlan[i].toMathML());
-			if (i < optimalPlan.length - 1) {
-				t1.push(new MathML("mo", textNode(",")));
-				t2.push(new MathML("mo", textNode(",")));
-			}
-		}
-		var t = MathML.brackets(t1, "(", ")");
-		t.push(new MathML("mo", textNode("=")));
-		t = t.concat(MathML.brackets(t2, "(", ")"));
-		paragraph.appendChild(MathML.done(MathML.row(t)));
-		paragraph.appendChild(textNode("."));
-		place.appendChild(paragraph);
-		if (isMinProblem) {
-			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb "));
-			paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].opposite().toMathML())));
-			paragraph.appendChild(textNode("."));
-			place.appendChild(paragraph);
-		}
-		if (hasTransformations) {
-			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu."));
-			place.appendChild(paragraph);
-			var variables = [], newOptimalPlan = [];
-			var variablesToRemove = transformations.map((x) => x[2]);
-			for (var i = 0; i < solution["phaseII"]["resultingPlan"].length; i++) {
-				if (variablesToRemove.indexOf(i) === -1) {
-					variables.push(i);
-				}
-			}
-			for (var i = 0; i < transformations.length; i++) {
-				var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
-				paragraph = document.createElement("p");
-				paragraph.appendChild(textNode("Mainīgā "));
-				paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
-				paragraph.appendChild(textNode(" vērtība sanāk "));
-				var difference = new Expression();
-				var t1 = new Expression(new Variable(newVariableOne));
-				difference = difference.add(t1);
-				var t2 = new Expression(new Variable(newVariableTwo));
-				difference = difference.add(t2.multiply(new Fraction(-1)));
-				math = difference.toMathML();
-				math.push(new MathML("mo", textNode("=")));
-				var value = optimalPlan[newVariableOne].substract(optimalPlan[newVariableTwo]);
-				newOptimalPlan[oldVariable] = value;
-				math = math.concat(value.toMathML());
-				paragraph.appendChild(MathML.done(MathML.row(math)));
-				place.appendChild(paragraph);
-			}
-			paragraph = document.createElement("p");
-			var t1 = [], t2 = [];
-			for (var i = 0; i < newOptimalPlan.length; i++) {
-				t1 = t1.concat(Variable.defaultVariables(new Variable(i)));
-				t2 = t2.concat(newOptimalPlan[i].toMathML());
-				if (i < newOptimalPlan.length - 1) {
-					t1.push(new MathML("mo", textNode(",")));
-					t2.push(new MathML("mo", textNode(",")));
-				}
-			}
-			var t = MathML.brackets(t1, "(", ")");
-			t.push(new MathML("mo", textNode("=")));
-			t = t.concat(MathML.brackets(t2, "(", ")"));
-			paragraph.appendChild(textNode("Sākotnējā LPU optimālais plāns ir "));
-			paragraph.appendChild(MathML.done(MathML.row(t)));
-			paragraph.appendChild(textNode("."));
-			place.appendChild(paragraph);
-		}
-	} else {
-		paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota."));
-		place.appendChild(paragraph);
 	}
 }
