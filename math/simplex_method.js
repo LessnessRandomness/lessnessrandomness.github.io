@@ -1003,12 +1003,6 @@ class LinearProgrammingProblem {
 				paragraph.appendChild(textNode("Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu."));
 				place.appendChild(paragraph);
 				var variables = [], newOptimalPlan = [];
-				var variablesToRemove = transformations.map((x) => x[2]);
-				for (var i = 0; i < solution["phaseII"]["resultingPlan"].length; i++) {
-					if (variablesToRemove.indexOf(i) === -1) {
-						variables.push(i);
-					}
-				}
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
 					paragraph = document.createElement("p");
@@ -1020,7 +1014,7 @@ class LinearProgrammingProblem {
 					difference = difference.add(t1);
 					var t2 = new Expression(new Variable(newVariableTwo));
 					difference = difference.add(t2.multiply(new Fraction(-1)));
-					math = difference.toMathML();
+					var math = difference.toMathML();
 					math.push(new MathML("mo", textNode("=")));
 					var value = optimalPlan[newVariableOne].substract(optimalPlan[newVariableTwo]);
 					newOptimalPlan[oldVariable] = value;
