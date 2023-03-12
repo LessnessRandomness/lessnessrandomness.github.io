@@ -973,7 +973,7 @@ class LinearProgrammingProblem {
 		if (solution["phaseII"]["success"]) {
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode("Redzams, ka iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir "));
-			paragraph.appendChild(MathML.done(solution["phaseII"]["objectiveValue"].toMathML()));
+			paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].toMathML())));
 			paragraph.appendChild(textNode(", kā arī optimālo plānu, kas ir "));
 			var optimalPlan = solution["phaseII"]["resultingPlan"];
 			var t1 = [], t2 = [];
