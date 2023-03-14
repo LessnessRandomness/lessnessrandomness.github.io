@@ -945,6 +945,7 @@ class LinearProgrammingProblem {
 				place.appendChild(paragraph);
 			} else {
 				paragraph.appendChild(textNode("Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša."));
+				place.appendChild(paragraph);
 				return;
 			}
 		} else {
@@ -1344,3 +1345,47 @@ Polytope.prototype.draw = function(place, width) {
 		throw("This polytope is empty");
 	}
 }
+
+// LinearProgrammingProblem.prototype.draw = function(place, width) {
+	// var numberOfVariables = this.objective.linexp.coeffs.length;
+	// if (numberOfVariables !== 2) {
+		// alert("Mainīgo skaits nav vienāds ar 2, tāpēc neko nezīmēšu.");
+		// return;
+	// }
+	// for (var i = 0; i < this.polytope.constraints.length; i++) {
+		// if (this.polytope.constraints[i].sign === "eq") {
+			// alert("Starp lineārajiem ierobežojumiem ir vienādība, tāpēc neko nezīmēšu.");
+		// }
+	// }
+	// var info = this.polytope.information();
+	// if (info["nonempty"]) {
+		// if (info["bounded"]) {
+			// var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
+			// var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
+			// var k = width.divide(x2.substract(x1));
+			// var height = y2.substract(y1).multiply(k);
+			// var draw = SVG().addTo(place).size(fractionToDecimal(width), fractionToDecimal(height));
+			// var vertices = this.polytope.allVertices();
+			// sortPoints(vertices);
+			// var temp = [];
+			// for (var i = 0; i < vertices.length; i++) {
+				// var v1 = vertices[i];
+				// var v2 = vertices[(i+1)%vertices.length];
+				// if (!v1[0].equalTo(v2[0]) || !v1[1].equalTo(v2[1])) {
+					// temp.push(v1);
+				// }
+			// }
+			// vertices = temp;
+			// var verticesInSVG = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
+			// verticesInSVG = verticesInSVG.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
+			// draw.rect(fractionToDecimal(width), fractionToDecimal(height)).fill("none").stroke({width: 1, color: "black"});
+			// draw.polygon(verticesInSVG).fill('green'); //.stroke({width: 1, color: "black"});
+		// } else {
+			// alert("Plānu kopa nav ierobežota, tāpēc neko nezīmēšu.");
+			// return;
+		// }
+	// } else {
+		// alert("Plānu kopa ir tukša jeb nesaderīga, tāpēc neko nezīmēšu.");
+		// return;
+	// }
+// }
