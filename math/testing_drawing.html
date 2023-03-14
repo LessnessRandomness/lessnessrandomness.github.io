@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="lv">
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+		<title>Test</title>
+		<script src="algebra.js"></script>
+		<script src="svg.min.js"></script>
+		<script src="simplex_method.js"></script>
+	</head>
+	<body>
+		<div id="test1"></div>
+		<div id="test2"></div>
+		<script>
+			var test1 = document.getElementById("test1");
+			var test2 = document.getElementById("test2");
+						
+			LinearProgrammingProblem.getForDrawing(test1);
+		</script>
+	</body>
+</html>
