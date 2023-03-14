@@ -597,6 +597,12 @@ class Polytope {
 // LinearProgrammingProblem
 
 class LinearProgrammingProblem {
+	// constructor(objective, polytope, integerVariables = [], artificialVariables = []) {
+		// this.objective = objective;
+		// this.polytope = polytope;
+		// this.integerVariables = integerVariables.sort();
+		// this.artificialVariables = artificialVariables;
+	// }
 	constructor(objective, constraints, nonnegativeVariables = [], integerVariables = [], artificialVariables = []) {
 		this.objective = objective; // LinearObjective
 		this.polytope = new Polytope(constraints, nonnegativeVariables); // Polytope
@@ -1055,7 +1061,7 @@ class LinearProgrammingProblem {
 		inputFields["numberOfVariables"].type = "text";
 		inputFields["numberOfVariables"].size = 2;
 		paragraph.appendChild(inputFields["numberOfVariables"]);
-		paragraph.appendChild(textNode(" Nevienādību skaits: "));
+		paragraph.appendChild(textNode(" Lineāro ierobežojumu skaits: "));
 		inputFields["numberOfInequalities"] = document.createElement("input");
 		inputFields["numberOfInequalities"].type = "text";
 		inputFields["numberOfInequalities"].size = 2;
