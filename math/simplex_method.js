@@ -1332,12 +1332,14 @@ class LinearProgrammingProblem {
 				place.appendChild(paragraph);
 			}
 			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Ieraksti kārtas numurus (sākot skaitīt no 1 un atdalot ar atstarpi) mainīgajiem, kuriem ir nenegativitātes nosacījumi!"));
+			paragraph.appendChild(textNode("Abi divi mainīgie būs obligāti nenegatīvi, jo citādi sanāk palielināt mainīgo skaitu un vairs nevar uzzīmēt plaknē."));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			inputFields["nonnegativeVariables"] = document.createElement("input");
 			inputFields["nonnegativeVariables"].type = "text";
 			inputFields["nonnegativeVariables"].size = 6;
+			inputFields["nonnegativeVariables"].value = "1 2";
+			inputFields["nonnegativeVariables"].disabled = true;
 			paragraph.appendChild(inputFields["nonnegativeVariables"]);
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
@@ -1413,7 +1415,6 @@ class LinearProgrammingProblem {
 					inputFields["constraints"][i]["sign"].disabled = true;
 					inputFields["constraints"][i]["B"].disabled = true;
 				}
-				inputFields["nonnegativeVariables"].disabled = true;
 				buttons["final"].disabled = true;
 				LPP.draw(place, new Fraction(200));
 			}
@@ -1530,7 +1531,7 @@ Polytope.prototype.draw = function(place, width) {
 	}
 }
 
-LinearProgrammingProblem.prototype.draw = function(place, width) { // , padding = 2) {
+LinearProgrammingProblem.prototype.draw = function(place, width, padding = 5) {
 	var numberOfVariables = this.objective.linexp.coeffs.length;
 	if (numberOfVariables !== 2) {
 		var paragraph = document.createElement("p");
@@ -1560,7 +1561,10 @@ LinearProgrammingProblem.prototype.draw = function(place, width) { // , padding 
 			var verticesInSVG = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
 			verticesInSVG = verticesInSVG.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
 			draw.rect(fractionToDecimal(width), fractionToDecimal(height)).fill("none").stroke({width: 1, color: "black"});
-			draw.polygon(verticesInSVG).fill('green'); //.stroke({width: 1, color: "black"});
+			draw.polygon(verticesInSVG).fill('green');
+			for (var i = 0; i < vertices.length; i++) {
+				draw.circle({cx: verticesInSVG[i][0], cy: verticesInSVG[i][1], r: 4}).fill("red").stroke({width: 1, color: "red"});
+			}
 		} else {
 			var paragraph = document.createElement("p");
 			paragraph.appendChild(textNode("Plānu kopa nav ierobežota, tāpēc neko nezīmēšu."));
