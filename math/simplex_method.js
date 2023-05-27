@@ -814,7 +814,7 @@ class LinearProgrammingProblem {
 	solution(place, language = "en") {
 		var paragraph, D;
 		paragraph = document.createElement("p");
-		D = {"lv": "Dots šāds lineārās programmēšanas uzdevums:", "en": "There is such linear programming problem:"};
+		D = {"lv": "Dots šāds lineārās programmēšanas uzdevums:", "en": "Given linear programming problem:"};
 		paragraph.appendChild(textNode(D[language]));
 		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(this.toMathML()));
@@ -823,7 +823,7 @@ class LinearProgrammingProblem {
 		var isMinProblem = !this.objective.maximise;
 		paragraph = document.createElement("p");
 		if (this.alreadyInCanonicalForm()) {
-			D = {"lv": "Šis LPU jau ir kanoniskajā formā, tāpēc nekas nav jāpārveido.", "en": "This LPP is in the canonical form already, no transformations necessary"};
+			D = {"lv": "Šis LPU jau ir kanoniskajā formā, tāpēc nekas nav jāpārveido.", "en": "The LPP is in the canonical form already."};
 			paragraph.appendChild(textNode(D[language]));
 			place.appendChild(paragraph);
 			canonicalForm = this.copy();
@@ -833,17 +833,12 @@ class LinearProgrammingProblem {
 			transformations = t[1];
 			var hasTransformations = (transformations.length > 0);
 			if (hasTransformations) {
-				if (transformations.length > 1) {
-					D = {"lv": "Ir mainīgie bez nenegativitātes nosacījumiem. Katru no tiem aizvietosim ar divu nenegatīvu mainīgo starpību: ", "en": "There are variables without constraints of nonnegativity. Every one has to be replaced with a difference of two nonnegative variables: "};
-					paragraph.appendChild(textNode(D[language]));
-				} else {
-					D = {"lv": "Ir mainīgais bez nenegativitātes nosacījuma. To aizvietosim ar divu nenegatīvu mainīgo starpību: ", "en": "There is a variable without constraint of nonnegativity. It has to be replaced with a difference of two nonnegative variables: "};
-					paragraph.appendChild(textNode(D[language]));
-				}
+				D = {"lv": "Katrs mainīgais bez nenengativitātes nosacījuma tiek aizvietots ar divu nenegatīvu mainīgo starpību: ", "en": "Each variable without constraint of nonnegativity is replaced with difference of two nonnegative variables: "};
+				paragraph.appendChild(textNode(D[language]));
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
 					paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
-					D = {"lv": " tiks aizvietots ar ", "en": " will be replaced by "};
+					D = {"lv": " tiks aizvietots ar ", "en": " will be replaced with "};
 					paragraph.appendChild(textNode(D[language]));
 					var difference = new Expression();
 					newVariableOne = new Expression(new Variable(newVariableOne));
@@ -859,7 +854,7 @@ class LinearProgrammingProblem {
 				}
 			}
 			paragraph.appendChild(document.createElement("br"));
-			D = {"lv": "Pārveidojot sākotnējo LPU kanoniskā formā, iegūstam:", "en": "After transforming the original LPP into canonical form, we get:"};
+			D = {"lv": "Pārveidojot sākotnējo LPU kanoniskā formā, iegūstam:", "en": "After transforming the given LPP into canonical form, we get:"};
 			paragraph.appendChild(textNode(D[language]));
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
@@ -875,17 +870,17 @@ class LinearProgrammingProblem {
 		var solution = simplexTable.solution();
 		if (hasPhaseI) {
 			paragraph = document.createElement("p");
-			D = {"lv": "Redzams, ka šim LPU ir jārisina palīgproblēma. Izveidojam tabulu:", "en": "The auxiliary problem has to be solved. We make table:"};
+			D = {"lv": "Redzams, ka šim LPU ir jārisina palīgproblēma. Izveidojam tabulu:", "en": "The auxiliary problem has to be solved. We make the table:"};
 			paragraph.appendChild(textNode(D[language]));
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Atņemam no tabulas pēdējās rindas visas rindas, kuras atbilst mākslīgajiem mainīgiem. ", "en": "We have to substract all the rows that correspond to artificial variables from the last row of the table. "};
+			D = {"lv": "Atņemam no tabulas pēdējās rindas visas rindas, kuras atbilst mākslīgajiem mainīgiem. ", "en": "We substract all rows corresponding to artificial variables from the last row of the table. "};
 			paragraph.appendChild(textNode(D[language]));
 			var rowsToSubstract = solution["phaseI"]["rowsToSubstract"];
 			if (rowsToSubstract.length === 1) {
-				D = {"lv": (x) => "Tas ir, atņemam no pēdējās rindas " + x + ". rindu. Iegūstam šādu tabulu:", "en": (x) => "It means, that we substract row Nr. " + x + " from the last row, resulting in such table:"};
+				D = {"lv": (x) => "Tas ir, atņemam no pēdējās rindas " + x + ". rindu. Iegūstam šādu tabulu:", "en": (x) => "We substract row Nr. " + x + " from the last row, resulting in such table:"};
 				paragraph.appendChild(textNode(D[language]((rowsToSubstract[0]+1).toString())));
 			} else {
 				// ???
@@ -897,7 +892,7 @@ class LinearProgrammingProblem {
 					paragraph.appendChild(textNode(" un " + (rowsToSubstract[rowsToSubstract.length - 1] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
 				};
 				if (language === "en") {
-					paragraph.appendChild(textNode("It means, that we substract rows "));
+					paragraph.appendChild(textNode("We substract rows "));
 					for (var i = 0; i < rowsToSubstract.length; i++) {
 						paragraph.appendChild(textNode("Nr. " + (rowsToSubstract[i] + 1).toString() + ", "))
 					}
@@ -911,7 +906,7 @@ class LinearProgrammingProblem {
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu palīgproblēmu.", "en": "Now we can start iterations (using simplex algorithm) to solve Phase I problem."};
+			D = {"lv": "Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu palīgproblēmu.", "en": "Now we can start iterations to solve auxiliary problem."};
 			paragraph.appendChild(textNode(D[language]));
 			var listOfPivots = solution["phaseI"]["listOfPivots"];
 			for (var i = 0; i < listOfPivots.length; i++) {
@@ -923,17 +918,17 @@ class LinearProgrammingProblem {
 			}
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Rezultātā iegūta šāda tabula", "en": "We get such resulting table:"};
+			D = {"lv": "Rezultātā iegūta šāda tabula:", "en": "The resulting table:"};
 			paragraph.appendChild(textNode(D[language]));
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			if (solution["phaseI"]["success"]) {
-				D = {"lv": "Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns.", "en": "Maximum value of goal function (of phase I problem) is zero, and that means we have found a support (?) plan."};
+				D = {"lv": "Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns.", "en": "Maximum value of goal function (of auxiliary problem) is zero, and that means we have found a feasible plan."};
 				paragraph.appendChild(textNode(D[language]));
 				paragraph.appendChild(document.createElement("br"));
-				D = {"lv": "Izmetam kolonnas, kuras atbilst mākslīgajiem mainīgiem, iegūstot šādu tabulu:", "en": "Now we throw away columns corresponding to the artificial variables, resulting in such table:"};
+				D = {"lv": "Izmetam kolonnas, kuras atbilst mākslīgajiem mainīgiem, iegūstot šādu tabulu:", "en": "Now we remove columns corresponding to the artificial variables, resulting in such table:"};
 				paragraph.appendChild(textNode(D[language]));
 				paragraph.appendChild(document.createElement("br"));
 				var columnsToRemove = solution["phaseII"]["columnsToRemove"];
@@ -943,7 +938,7 @@ class LinearProgrammingProblem {
 				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 				place.appendChild(paragraph);
 				paragraph = document.createElement("p");
-				D = {"lv": "Nākamais solis ir tabulas pēdējās rindas aizpildīšana atbilstoši mērķa funkcijai:", "en": "The next step is to fill the last row of the table according to the goal (?) function:"};
+				D = {"lv": "Nākamais solis ir tabulas pēdējās rindas aizpildīšana atbilstoši mērķa funkcijai:", "en": "The next step is to fill the last row of the table according to the objective function:"};
 				paragraph.appendChild(textNode(D[language]));
 				paragraph.appendChild(document.createElement("br"));
 				for (var i = 0; i < simplexTable.table.cols; i++) {
@@ -956,7 +951,7 @@ class LinearProgrammingProblem {
 				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 				place.appendChild(paragraph);
 				paragraph = document.createElement("p");
-				D = {"lv": "Tālāk mērķa funkcijā visus bāzes mainīgos izsakām ar citiem mainīgajiem. Tabulā tas nozīmē - attiecīgajam bāzes mainīgam atbilstošo tabulas rindu pareizina ar vajadzīgo skaitli un atņem no tabulas pēdējās rindas tā, lai pēdējā rindā pozīcijā, kas atbilst šim bāzes mainīgajam, sanāktu nulle.", "en": "The next step is to express (?) all the basis variables by all the other variables. In the context of the table it means - table row, corresponding to a basis variable, has to be multiplied by necessary number and substracted from the last row of the table in such way that the last row has zero in the position that corresponds to this basis variable."};
+				D = {"lv": "Tālāk mērķa funkcijā visus bāzes mainīgos izsakām ar citiem mainīgajiem. Tabulā tas nozīmē - attiecīgajam bāzes mainīgam atbilstošo tabulas rindu pareizina ar vajadzīgo skaitli un atņem no tabulas pēdējās rindas tā, lai pēdējā rindā pozīcijā, kas atbilst šim bāzes mainīgajam, sanāktu nulle.", "en": "The next step is to express all basic variables by nonbasic variables (in the objective function). In the table it means - all rows, corresponding to basic variable, has to be multiplied by necessary number and substracted from the last row to get zero in the last row in the column corresponding to the basic variable."};
 				paragraph.appendChild(textNode(D[language]));
 				for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
 					var r = solution["phaseII"]["rowsToSubstract"][i][0];
@@ -976,7 +971,7 @@ class LinearProgrammingProblem {
 				}
 				place.appendChild(paragraph);
 			} else {
-				D = {"lv": "Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša.", "en": "Maximum value of objective function of the auxiliary problem is not zero, that means that plan set of the original LPP is empty."};
+				D = {"lv": "Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša.", "en": "Maximum value of objective function (of the auxiliary problem) is not zero, it means that the plan set of the original LPP is empty."};
 				paragraph.appendChild(textNode(D[language]));
 				place.appendChild(paragraph);
 				return;
@@ -991,13 +986,13 @@ class LinearProgrammingProblem {
 			}
 		}
 		paragraph = document.createElement("p");
-		D = {"lv": "Iegūta šāda tabula:", "en": "We have such table:"};
+		D = {"lv": "Iegūta šāda tabula:", "en": "Resulting table:"};
 		paragraph.appendChild(textNode(D[language]));
 		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 		place.appendChild(paragraph);
 		paragraph = document.createElement("p");
-		D = {"lv": "Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu doto LPU.", "en": "Now we can start iterations (using simplex algorithm) to solve the LPP."};
+		D = {"lv": "Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu doto LPU.", "en": "Now the iteration process can be started to solve the LPP."};
 		paragraph.appendChild(textNode(D[language]));
 		for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
 			var row = solution["phaseII"]["listOfPivots"][i][0];
@@ -1008,17 +1003,17 @@ class LinearProgrammingProblem {
 		}
 		place.appendChild(paragraph);
 		paragraph = document.createElement("p");
-		D = {"lv": "Rezultātā iegūta šāda tabula:", "en": "We have such table now:"};
+		D = {"lv": "Rezultātā iegūta šāda tabula:", "en": "Resulting table:"};
 		paragraph.appendChild(textNode(D[language]));
 		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 		place.appendChild(paragraph);
 		if (solution["phaseII"]["success"]) {
 			paragraph = document.createElement("p");
-			D = {"lv": "Redzams, ka iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir ", "en": "We can see that iterations have finished successfully. We can read the optimal value of the objective function from the table - it is "};
+			D = {"lv": "Redzams, ka iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir ", "en": "The iteration process has finished successfully. The optimal value of the objective function can be read from the table - it is "};
 			paragraph.appendChild(textNode(D[language]));
 			paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].toMathML())));
-			D = {"lv": ", kā arī optimālo plānu, kas ir ", "en": ", as well as the optimal plan, which is "}.
+			D = {"lv": ", kā arī optimālo plānu, kas ir ", "en": ", as well as the optimal plan, which is "};
 			paragraph.appendChild(textNode(D[language]));
 			var optimalPlan = solution["phaseII"]["resultingPlan"];
 			var t1 = [], t2 = [];
@@ -1038,7 +1033,7 @@ class LinearProgrammingProblem {
 			place.appendChild(paragraph);
 			if (isMinProblem) {
 				paragraph = document.createElement("p");
-				D = {"lv": "Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb ", "en": "The original LPP is problem of the minimization and that means that the optimal (minimal) value of the objective function is opposite to the one we have calculated or "};
+				D = {"lv": "Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb ", "en": "The given LPP is problem of minimization. That means that the optimal (minimal) value of the objective function is opposite of one we have calculated: "};
 				paragraph.appendChild(textNode(D[language]));
 				paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].opposite().toMathML())));
 				paragraph.appendChild(textNode("."));
@@ -1046,7 +1041,7 @@ class LinearProgrammingProblem {
 			}
 			if (hasTransformations) {
 				paragraph = document.createElement("p");
-				D = {"lv": "Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu.", "en": "The original LPP has variables without nonnegativity constraints and those were replaced by difference of two nonnegative variables. That means we have to do corresponding calculations to get the optimal plan of the original LPP."};
+				D = {"lv": "Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu.", "en": "The given LPP has variables without nonnegativity constraints (those were replaced by difference of two nonnegative variables). So, we have to do corresponding calculations to get the optimal plan of the given LPP."};
 				paragraph.appendChild(textNode(D[language]));
 				place.appendChild(paragraph);
 				var variables = [], newOptimalPlan = [];
@@ -1056,7 +1051,7 @@ class LinearProgrammingProblem {
 					D = {"lv": "Mainīgā ", "en": "Value of variable "};
 					paragraph.appendChild(textNode(D[language]));
 					paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
-					D = {"lv": " vērtība sanāk ", "en": " is therefore "};
+					D = {"lv": " vērtība sanāk ", "en": " is "};
 					paragraph.appendChild(textNode(D[language]));
 					var difference = new Expression();
 					var t1 = new Expression(new Variable(newVariableOne));
@@ -1084,7 +1079,7 @@ class LinearProgrammingProblem {
 				var t = MathML.brackets(t1, "(", ")");
 				t.push(new MathML("mo", textNode("=")));
 				t = t.concat(MathML.brackets(t2, "(", ")"));
-				D = {"lv": "Sākotnējā LPU optimālais plāns ir", "en": "The optimal plan of the original LPP is "};
+				D = {"lv": "Sākotnējā LPU optimālais plāns ir", "en": "The optimal plan of the given LPP is "};
 				paragraph.appendChild(textNode(D[language]));
 				paragraph.appendChild(MathML.done(MathML.row(t)));
 				paragraph.appendChild(textNode("."));
@@ -1092,7 +1087,7 @@ class LinearProgrammingProblem {
 			}
 		} else {
 			paragraph = document.createElement("p");
-			D = {"lv": "Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota.", "en": "We can see that the iterative process has ended with failure. It means that the objective function of the LPP is unbounded."};
+			D = {"lv": "Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota.", "en": "The iteration process has ended with failure. It means that the objective function of the LPP is unbounded."};
 			paragraph.appendChild(textNode(D[language]));
 			place.appendChild(paragraph);
 		}
