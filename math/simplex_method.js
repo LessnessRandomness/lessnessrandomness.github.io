@@ -1158,7 +1158,7 @@ class LinearProgrammingProblem {
 			}
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Ievadi LPU nevienādības (koeficientus, zīmes, brīvos locekļus)!", "en": "Enter constraints of the LPP (coefficients, signs, free coefficient (??))!"};
+			D = {"lv": "Ievadi LPU nevienādības (koeficientus, zīmes, brīvos locekļus)!", "en": "Input constraints of the LPP (coefficients, signs, free coefficient (??))!"};
 			paragraph.appendChild(textNode(D[language]));
 			place.appendChild(paragraph);
 			inputFields["constraints"] = [];
