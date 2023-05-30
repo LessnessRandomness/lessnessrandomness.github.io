@@ -814,8 +814,7 @@ class LinearProgrammingProblem {
 	solution(place, language = "en") {
 		var paragraph, D;
 		paragraph = document.createElement("p");
-		D = {"lv": "Dots šāds lineārās programmēšanas uzdevums:", "en": "Given linear programming problem:"};
-		paragraph.appendChild(textNode(D[language]));
+		paragraph.appendChild(textNode(localization["given_LPP"][language]));
 		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(this.toMathML()));
 		place.appendChild(paragraph);
@@ -823,8 +822,7 @@ class LinearProgrammingProblem {
 		var isMinProblem = !this.objective.maximise;
 		paragraph = document.createElement("p");
 		if (this.alreadyInCanonicalForm()) {
-			D = {"lv": "Šis LPU jau ir kanoniskajā formā, tāpēc nekas nav jāpārveido.", "en": "The LPP is in the canonical form already."};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["already_canonical_form"][language]));
 			place.appendChild(paragraph);
 			canonicalForm = this.copy();
 		} else {
@@ -833,13 +831,11 @@ class LinearProgrammingProblem {
 			transformations = t[1];
 			var hasTransformations = (transformations.length > 0);
 			if (hasTransformations) {
-				D = {"lv": "Katrs mainīgais bez nenengativitātes nosacījuma tiek aizvietots ar divu nenegatīvu mainīgo starpību: ", "en": "Each variable without constraint of nonnegativity is replaced with difference of two nonnegative variables: "};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["replacing_variables_without_nonnegativity"][language] + " "));
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
 					paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
-					D = {"lv": " tiks aizvietots ar ", "en": " will be replaced with "};
-					paragraph.appendChild(textNode(D[language]));
+					paragraph.appendChild(textNode(" " + localization["replaced_with"][language] + " "));
 					var difference = new Expression();
 					newVariableOne = new Expression(new Variable(newVariableOne));
 					difference = difference.add(newVariableOne);
@@ -854,8 +850,7 @@ class LinearProgrammingProblem {
 				}
 			}
 			paragraph.appendChild(document.createElement("br"));
-			D = {"lv": "Pārveidojot sākotnējo LPU kanoniskā formā, iegūstam:", "en": "After transforming the given LPP into canonical form, we get:"};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["LPP_transformed_into_canonical_form"][language]));
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
 			place.appendChild(paragraph);
@@ -870,34 +865,18 @@ class LinearProgrammingProblem {
 		var solution = simplexTable.solution();
 		if (hasPhaseI) {
 			paragraph = document.createElement("p");
-			D = {"lv": "Redzams, ka šim LPU ir jārisina palīgproblēma. Izveidojam tabulu:", "en": "The auxiliary problem has to be solved. We make the table:"};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["Auxiliary_problem_has_to_be_solved"][language]));
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Atņemam no tabulas pēdējās rindas visas rindas, kuras atbilst mākslīgajiem mainīgiem. ", "en": "We substract all rows corresponding to artificial variables from the last row of the table. "};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["Preparation_of_table_of_auxiliary_problem"][language]));
+			paragraph.appendChild(document.createElement("br"));
 			var rowsToSubstract = solution["phaseI"]["rowsToSubstract"];
 			if (rowsToSubstract.length === 1) {
-				D = {"lv": (x) => "Tas ir, atņemam no pēdējās rindas " + x + ". rindu. Iegūstam šādu tabulu:", "en": (x) => "We substract row Nr. " + x + " from the last row, resulting in such table:"};
-				paragraph.appendChild(textNode(D[language]((rowsToSubstract[0]+1).toString())));
+				paragraph.appendChild(textNode(localization["One_row_to_substract_(auxiliary_problem)"][language](rowsToSubstract[0])));
 			} else {
-				// ???
-				if (language === "lv") {
-					paragraph.appendChild(textNode("Tas ir, atņemam no pēdējās rindas " + (rowsToSubstract[0] + 1).toString() + "."));
-					for (var i = 1; i < rowsToSubstract.length - 1; i++) {
-						paragraph.appendChild(textNode(", " + (rowsToSubstract[i] + 1).toString() + "."));
-					}
-					paragraph.appendChild(textNode(" un " + (rowsToSubstract[rowsToSubstract.length - 1] + 1).toString() + ". rindu. Iegūstam šādu tabulu:"));
-				};
-				if (language === "en") {
-					paragraph.appendChild(textNode("We substract rows "));
-					for (var i = 0; i < rowsToSubstract.length; i++) {
-						paragraph.appendChild(textNode("Nr. " + (rowsToSubstract[i] + 1).toString() + ", "))
-					}
-					paragraph.appendChild(textNode("resulting in such table:"));
-				}
+				paragraph.appendChild(textNode(localization["Multiple_rows_to_substract_(auxiliary_problem)"][language](rowsToSubstract)));
 			}
 			for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {
 				simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
@@ -905,9 +884,8 @@ class LinearProgrammingProblem {
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
-			paragraph = document.createElement("p");
-			D = {"lv": "Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu palīgproblēmu.", "en": "Now we can start iterations to solve auxiliary problem."};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph = document.createElement("p");;
+			paragraph.appendChild(textNode(localization["start_iterations_(auxiliary_problem)"][language]));
 			var listOfPivots = solution["phaseI"]["listOfPivots"];
 			for (var i = 0; i < listOfPivots.length; i++) {
 				var row = listOfPivots[i][0];
@@ -918,18 +896,15 @@ class LinearProgrammingProblem {
 			}
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Rezultātā iegūta šāda tabula:", "en": "The resulting table:"};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["resulting_table"][language]));
 			paragraph.appendChild(document.createElement("br"));
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			if (solution["phaseI"]["success"]) {
-				D = {"lv": "Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns.", "en": "Maximum value of goal function (of auxiliary problem) is zero, and that means we have found a feasible plan."};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["feasible_plan_found"][language]));
 				paragraph.appendChild(document.createElement("br"));
-				D = {"lv": "Izmetam kolonnas, kuras atbilst mākslīgajiem mainīgiem, iegūstot šādu tabulu:", "en": "Now we remove columns corresponding to the artificial variables, resulting in such table:"};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["remove_columns_of_artificial_variables"][language]));
 				paragraph.appendChild(document.createElement("br"));
 				var columnsToRemove = solution["phaseII"]["columnsToRemove"];
 				for (var i = columnsToRemove.length - 1; i >= 0; i--) {
@@ -938,8 +913,7 @@ class LinearProgrammingProblem {
 				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 				place.appendChild(paragraph);
 				paragraph = document.createElement("p");
-				D = {"lv": "Nākamais solis ir tabulas pēdējās rindas aizpildīšana atbilstoši mērķa funkcijai:", "en": "The next step is to fill the last row of the table according to the objective function:"};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["last_row_according_to_objective"][language]));
 				paragraph.appendChild(document.createElement("br"));
 				for (var i = 0; i < simplexTable.table.cols; i++) {
 					if (i < simplexTable.objective.linexp.coeffs.length) {
@@ -951,28 +925,19 @@ class LinearProgrammingProblem {
 				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 				place.appendChild(paragraph);
 				paragraph = document.createElement("p");
-				D = {"lv": "Tālāk mērķa funkcijā visus bāzes mainīgos izsakām ar citiem mainīgajiem. Tabulā tas nozīmē - attiecīgajam bāzes mainīgam atbilstošo tabulas rindu pareizina ar vajadzīgo skaitli un atņem no tabulas pēdējās rindas tā, lai pēdējā rindā pozīcijā, kas atbilst šim bāzes mainīgajam, sanāktu nulle.", "en": "The next step is to express all basic variables by nonbasic variables (in the objective function). In the table it means - all rows, corresponding to basic variable, has to be multiplied by necessary number and substracted from the last row to get zero in the last row in the column corresponding to the basic variable."};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["Preparation_of_table_of_main_problem"][language]));
 				for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
 					var r = solution["phaseII"]["rowsToSubstract"][i][0];
 					var k = solution["phaseII"]["rowsToSubstract"][i][1];
 					paragraph.appendChild(document.createElement("br"));
-					if (language === "lv") {
-						paragraph.appendChild(textNode("Atņemam no pēdējās rindas " + (r + 1).toString() + ". rindu, pareizinātu ar "));
-						paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
-						paragraph.appendChild(textNode("."));
-					}
-					if (language === "en") {
-						paragraph.appendChild(textNode("Substract row Nr. " + (r + 1).toString() + ", multiplied by "));
-						paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
-						paragraph.appendChild(textNode(", from the last row of the table."));
-					}
+					paragraph.appendChild(textNode(localization["substract_multiplied_row"][language](r)));
+					paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
+					paragraph.appendChild(textNode("."));
 					simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, r, k);
 				}
 				place.appendChild(paragraph);
 			} else {
-				D = {"lv": "Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir tukša.", "en": "Maximum value of objective function (of the auxiliary problem) is not zero, it means that the plan set of the original LPP is empty."};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["set_of_plans_is_empty"][language]));
 				place.appendChild(paragraph);
 				return;
 			}
@@ -1095,15 +1060,14 @@ class LinearProgrammingProblem {
 	static calculator(place, language = "en") {
 		var inputFields = {};
 		var buttons = {};
+		var D = {};
 		var paragraph = document.createElement("p");
-		var D = {"lv": "Mainīgo skaits: ", "en": "Number of variables: "};
-		paragraph.appendChild(textNode(D[language]));
+		paragraph.appendChild(textNode(localization["number_of_variables"][language] + ": "));
 		inputFields["numberOfVariables"] = document.createElement("input");
 		inputFields["numberOfVariables"].type = "text";
 		inputFields["numberOfVariables"].size = 2;
 		paragraph.appendChild(inputFields["numberOfVariables"]);
-		D = {"lv": " Lineāro ierobežojumu skaits: ", "en": " Number of linear constraints: "};
-		paragraph.appendChild(textNode(D[language]));
+		paragraph.appendChild(textNode(" " + localization["number_of_linear_constraints"][language] + ": "));
 		inputFields["numberOfInequalities"] = document.createElement("input");
 		inputFields["numberOfInequalities"].type = "text";
 		inputFields["numberOfInequalities"].size = 2;
@@ -1117,21 +1081,18 @@ class LinearProgrammingProblem {
 			var numberOfVariables = parseInt(inputFields["numberOfVariables"].value);
 			var numberOfInequalities = parseInt(inputFields["numberOfInequalities"].value);
 			if (isNaN(numberOfVariables) || isNaN(numberOfInequalities)) {
-				D = {"lv": "Ievadi veselus skaitļus, kas lielāki par nulli!", "en": "Please, enter integers bigger than zero!"};
-				alert(D[language]);
+				alert(localization["enter_integers_bigger_than_zero"][language]);
 				return;
 			}
 			if (numberOfVariables < 1 || numberOfInequalities < 1) {
-				D = {"lv": "Ievadi veselus skaitļus, kas lielāki par nulli!", "en": "Please, enter integers bigger than zero!"};
-				alert(D[language]);
+				alert(localization["enter_integers_bigger_than_zero"][language]);
 				return;
 			}
 			inputFields["numberOfVariables"].disabled = true;
 			inputFields["numberOfInequalities"].disabled = true;
 			buttons["start"].disabled = true;
 			paragraph = document.createElement("p");
-			D = {"lv": "Izvēlies 'max', ja vēlies maksimizēt mērķa funkciju, vai arī 'min', ja vēlies to minimizēt: ", "en": "Choose 'max', if you want to maximise objective function, or choose 'min', if you want to minimize it: "};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["choose_max_or_min"][language] + ": "));
 			inputFields["maxOrMin"] = document.createElement("select");
 			var options = ["max", "min"];
 			for (var i = 0; i < options.length; i++) {
@@ -1143,8 +1104,7 @@ class LinearProgrammingProblem {
 			paragraph.appendChild(inputFields["maxOrMin"]);
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Ievadi mērķa funkcijas koeficientus!", "en": "Input the coefficients of the objective function!"};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["enter_the_objective_function"][language]));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			inputFields["objective"] = [];
@@ -1158,8 +1118,7 @@ class LinearProgrammingProblem {
 			}
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			D = {"lv": "Ievadi LPU nevienādības (koeficientus, zīmes, brīvos locekļus)!", "en": "Input constraints of the LPP (coefficients, signs, free coefficient (??))!"};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["enter_constraints"][language]));
 			place.appendChild(paragraph);
 			inputFields["constraints"] = [];
 			for (var i = 0; i < numberOfInequalities; i++) {
@@ -1194,8 +1153,7 @@ class LinearProgrammingProblem {
 				place.appendChild(paragraph);
 			}
 			paragraph = document.createElement("p");
-			D = {"lv": "Ieraksti kārtas numurus (sākot skaitīt no 1 un atdalot ar atstarpi) mainīgajiem, kuriem ir nenegativitātes nosacījumi!", "en": "Input numbers of the variables (starting to count from 1 and separating them with spaces) that have corresponding constraints of nonnegativity!"};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["enter_nonnegative_variables"][language]));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			inputFields["nonnegativeVariables"] = document.createElement("input");
@@ -1214,8 +1172,7 @@ class LinearProgrammingProblem {
 				for (var i = 0; i < numberOfVariables; i++) {
 					var fraction = Fraction.parse(inputFields["objective"][i].value);
 					if (fraction === undefined) {
-						D = {"lv": (x) => "Ievadītais mērķa funkcijas " + x + ". koeficients nav ievadīts pareizi!", "en": (x) => "The coefficient Nr. " + x + " of the objective function is not entered correctly!"};
-						alert(D[language]((i+1).toString()));
+						alert(localization["wrong_coefficient_of_the_objective"][language]((i+1).toString()));
 						return;
 					}
 					coeffs.push(fraction);
@@ -1227,8 +1184,7 @@ class LinearProgrammingProblem {
 					for (var j = 0; j < numberOfVariables; j++) {
 						var fraction = Fraction.parse(inputFields["constraints"][i]["coeffs"][j].value);
 						if (fraction === undefined) {
-							D = {"": (x, y) => x + ". nevienādības " + y + ". koeficients nav ievadīts pareizi!", "en": (x, y) => "The coefficients Nr. " + y + " of the constraint Nr. " + x + " is not entered correctly!"};
-							alert(D[language]((i+1).toString(), (j+1).toString()));
+							alert(localization["wrong_coefficient_of_constraint"][language]((i+1).toString(), (j+1).toString()));
 							return;
 						}
 						coeffs.push(fraction);
@@ -1237,8 +1193,7 @@ class LinearProgrammingProblem {
 					var sign = ["le", "eq", "ge"][index];
 					var fraction = Fraction.parse(inputFields["constraints"][i]["B"].value);
 					if (fraction === undefined) {
-						D = {"lv": (x) => x + ". nevienādības brīvais loceklis nav ievadīts pareizi!", "en": (x) => "The free coefficient (??) of the constraint Nr. " + x + " is not entered correctly!"};
-						alert(D[language]((i+1).toString()));
+						alert(localization["wrong_constant_of_constraint"][language]((i+1).toString()));
 						return;
 					}
 					constraints.push(new LinearConstraint(new LinearExpression(coeffs), fraction, sign));
@@ -1249,18 +1204,15 @@ class LinearProgrammingProblem {
 					if (indexes[i] !== "") {
 						var index = parseInt(indexes[i]);
 						if (isNaN(index)) {
-							D = {"lv": "Nenegatīvo mainīgo sarakstā ir ieviesusies kļūda!", "en": "There is a mistake in the list of nonnegative variables!"};
-							alert(D[language]);
+							alert(localization["error_in_the_nonnegative_list"][language]);
 							return;
 						} else {
 							if (index < 1) {
-								D = {"lv": "Nenegatīvo mainīgo sarakstā ir ieklīdusi vērtība, kas mazāka par 1", "en": "There is a value less than 1 in the list of nonnegative variables!"};
-								alert(D[language]);
+								alert(localization["index_less_than_1"][language]);
 								return;
 							}
 							if (index > numberOfVariables) {
-								D = {"lv": "Pavisam ir " + numberOfVariables.toString() + " mainīgie. Nenegatīvo mainīgo sarakstā ir ieklīdusi vērtība, kas ir lielāka par mainīgo skaitu.", "en": "There are " + numberOfVariables.toString() + " variables. There is a value that's bigger than the number of variables in the list of nonnegative variables."};
-								alert(D[language]);
+								alert(localization["index_bigger_than_number_of_variables"][language](numberOfVariables.toString()));
 								return;
 							}
 							if (nonnegativeVariables.indexOf(index - 1) < 0) {
