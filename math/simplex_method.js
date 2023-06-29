@@ -951,14 +951,12 @@ class LinearProgrammingProblem {
 			}
 		}
 		paragraph = document.createElement("p");
-		D = {"lv": "Iegūta šāda tabula:", "en": "Resulting table:"};
-		paragraph.appendChild(textNode(D[language]));
+		paragraph.appendChild(textNode(localization["resulting_table"][language]));
 		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 		place.appendChild(paragraph);
 		paragraph = document.createElement("p");
-		D = {"lv": "Tagad var uzsākt iterāciju procesu jeb izmantot simpleksa algoritmu, lai atrisinātu doto LPU.", "en": "Now the iteration process can be started to solve the LPP."};
-		paragraph.appendChild(textNode(D[language]));
+		paragraph.appendChild(textNode(localization["start_iterations"][language]));
 		for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
 			var row = solution["phaseII"]["listOfPivots"][i][0];
 			var col = solution["phaseII"]["listOfPivots"][i][1];
@@ -968,18 +966,15 @@ class LinearProgrammingProblem {
 		}
 		place.appendChild(paragraph);
 		paragraph = document.createElement("p");
-		D = {"lv": "Rezultātā iegūta šāda tabula:", "en": "Resulting table:"};
-		paragraph.appendChild(textNode(D[language]));
+		paragraph.appendChild(textNode(localization["resulting_table"][language]));
 		paragraph.appendChild(document.createElement("br"));
 		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 		place.appendChild(paragraph);
 		if (solution["phaseII"]["success"]) {
 			paragraph = document.createElement("p");
-			D = {"lv": "Redzams, ka iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir ", "en": "The iteration process has finished successfully. The optimal value of the objective function can be read from the table - it is "};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["phase_II_success_part_1"][language]));
 			paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].toMathML())));
-			D = {"lv": ", kā arī optimālo plānu, kas ir ", "en": ", as well as the optimal plan, which is "};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["phase_II_success_part_2"][language]));
 			var optimalPlan = solution["phaseII"]["resultingPlan"];
 			var t1 = [], t2 = [];
 			for (var i = 0; i < optimalPlan.length; i++) {

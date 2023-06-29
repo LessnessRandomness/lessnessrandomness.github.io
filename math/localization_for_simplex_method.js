@@ -112,7 +112,7 @@ localization["resulting_table"]["en"] = "Resulting table:";
 
 localization["feasible_plan_found"] = {};
 localization["feasible_plan_found"]["lv"] = "Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrast atbalsta plāns.";
-localization["feasible_plan_found"]["en"] = "Maximum value of the goal function (for auxiliary problem) is zero. That means that feasible plan is found.";
+localization["feasible_plan_found"]["en"] = "Maximum value of the goal function (for auxiliary problem) is zero. That means that a feasible plan is found.";
 
 localization["remove_columns_of_artificial_variables"] = {};
 localization["remove_columns_of_artificial_variables"]["lv"] = "Izņemam kolonnas, kuras atbilst mākslīgiem mainīgiem, iegūstot šādu tabulu:";
@@ -133,3 +133,17 @@ localization["substract_multiplied_row"]["en"] = (x) => "Substract (from the las
 localization["set_of_plans_is_empty"] = {};
 localization["set_of_plans_is_empty"]["lv"] = "Palīgproblēmas mērķa funkcijas maksimālā vērtība nav nulle, tātad sākotnējā LPU plānu kopa ir ";
 localization["set_of_plans_is_empty"]["en"] = "Maximum value of the objective function (of the auxiliary problem) isn't zero, therefore the plan set of the original LPP is empty.";
+localization["start_iterations"] = {};
+localization["start_iterations"]["lv"] = "Uzsākam simpleksa algoritma iterāciju procesu, lai atrisinātu doto LPU.";
+localization["start_iterations"]["en"] = "We start iteration process (of the simplex algorithm) to solve given LPP.";
+
+localization["phase_II_success_part_1"] = {};
+localization["phase_II_success_part_1"]["lv"] = "Iterāciju process beidzies veiksmīgi. No tabulas var nolasīt mērķa funkcijas optimālo vērtību, kas ir ";
+localization["phase_II_success_part_1"]["en"] = "Iterations has finished with success. The optimal value of the objective function can be read from the table - it is ";
+
+localization["phase_II_success_part_2"] = {};
+localization["phase_II_success_part_2"]["lv"] = ", kā arī optimālo plānu, kas ir ";
+localization["phase_II_success_part_2"]["en"] = ", as well as the optimal plan, which is ";
+
+
+
