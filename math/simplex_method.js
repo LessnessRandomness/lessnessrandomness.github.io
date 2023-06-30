@@ -993,26 +993,22 @@ class LinearProgrammingProblem {
 			place.appendChild(paragraph);
 			if (isMinProblem) {
 				paragraph = document.createElement("p");
-				D = {"lv": "Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb ", "en": "The given LPP is problem of minimization. That means that the optimal (minimal) value of the objective function is opposite of one we have calculated: "};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["original_LPP_min"][language]));
 				paragraph.appendChild(MathML.done(MathML.row(solution["phaseII"]["objectiveValue"].opposite().toMathML())));
 				paragraph.appendChild(textNode("."));
 				place.appendChild(paragraph);
 			}
 			if (hasTransformations) {
 				paragraph = document.createElement("p");
-				D = {"lv": "Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu.", "en": "The given LPP has variables without nonnegativity constraints (those were replaced by difference of two nonnegative variables). So, we have to do corresponding calculations to get the optimal plan of the given LPP."};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["original_LPP_has_variables_without_nonnegativity"][language]));
 				place.appendChild(paragraph);
 				var variables = [], newOptimalPlan = [];
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
 					paragraph = document.createElement("p");
-					D = {"lv": "Mainīgā ", "en": "Value of variable "};
-					paragraph.appendChild(textNode(D[language]));
+					paragraph.appendChild(textNode(localization["value_of_variable_1"][language]));
 					paragraph.appendChild(MathML.done(Variable.defaultVariables(new Variable(oldVariable))));
-					D = {"lv": " vērtība sanāk ", "en": " is "};
-					paragraph.appendChild(textNode(D[language]));
+					paragraph.appendChild(textNode(localization["value_of_variable_2"][language]));
 					var difference = new Expression();
 					var t1 = new Expression(new Variable(newVariableOne));
 					difference = difference.add(t1);
@@ -1039,16 +1035,14 @@ class LinearProgrammingProblem {
 				var t = MathML.brackets(t1, "(", ")");
 				t.push(new MathML("mo", textNode("=")));
 				t = t.concat(MathML.brackets(t2, "(", ")"));
-				D = {"lv": "Sākotnējā LPU optimālais plāns ir", "en": "The optimal plan of the given LPP is "};
-				paragraph.appendChild(textNode(D[language]));
+				paragraph.appendChild(textNode(localization["the_optimal_plan"][language]));
 				paragraph.appendChild(MathML.done(MathML.row(t)));
 				paragraph.appendChild(textNode("."));
 				place.appendChild(paragraph);
 			}
 		} else {
 			paragraph = document.createElement("p");
-			D = {"lv": "Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota.", "en": "The iteration process has ended with failure. It means that the objective function of the LPP is unbounded."};
-			paragraph.appendChild(textNode(D[language]));
+			paragraph.appendChild(textNode(localization["unbounded_objective"][language]));
 			place.appendChild(paragraph);
 		}
 	}
@@ -1231,7 +1225,7 @@ class LinearProgrammingProblem {
 				}
 				inputFields["nonnegativeVariables"].disabled = true;
 				buttons["final"].disabled = true;
-				LPP.solution(place);
+				LPP.solution(place, language);
 			}
 		}
 	}

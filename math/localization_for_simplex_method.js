@@ -145,5 +145,26 @@ localization["phase_II_success_part_2"] = {};
 localization["phase_II_success_part_2"]["lv"] = ", kā arī optimālo plānu, kas ir ";
 localization["phase_II_success_part_2"]["en"] = ", as well as the optimal plan, which is ";
 
+localization["original_LPP_min"] = {};
+localization["original_LPP_min"]["lv"] = "Sākotnējais LPU ir minimizācijas uzdevums, tāpēc tā mērķa funkcijas optimālā (minimālā) vērtība ir pretēja iegūtajai jeb ";
+localization["original_LPP_min"]["en"] = "The given LPP is problem of minimization. That means that the optimal (minimal) value of the objective function is opposite of one we have calculated: ";
 
+localization["original_LPP_has_variables_without_nonnegativity"] = {};
+localization["original_LPP_has_variables_without_nonnegativity"]["lv"] = "Sākotnējais LPU satur mainīgos bez nenegativitātes nosacījumiem, kuri tika aizvietoti ar nenegatīvu mainīgo starpību. Tātad ir jāveic attiecīgie aprēķini, lai iegūtu sākotnējā LPU optimālo plānu.";
+localization["original_LPP_has_variables_without_nonnegativity"]["en"] = "The given LPP has variables without nonnegativity constraints (those were replaced by difference of two nonnegative variables). So, we have to do corresponding calculations to get the optimal plan of the given LPP.";
 
+localization["value_of_variable_1"] = {};
+localization["value_of_variable_1"]["lv"] = "Mainīgā ";
+localization["value_of_variable_1"]["en"] = "Value of variable ";
+
+localization["value_of_variable_2"] = {};
+localization["value_of_variable_2"]["lv"] = " vērtība sanāk ";
+localization["value_of_variable_2"]["en"] = " is ";
+
+localization["the_optimal_plan"] = {};
+localization["the_optimal_plan"]["lv"] = "Sākotnējā LPU optimālais plāns ir ";
+localization["the_optimal_plan"]["en"] = "The optimal plan of the given LPP is ";
+
+localization["unbounded_objective"] = {};
+localization["unbounded_objective"]["lv"] = "Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota.";
+localization["unbounded_objective"]["en"] = "The iteration process has ended with failure. It means that the objective function of the LPP is unbounded.";
