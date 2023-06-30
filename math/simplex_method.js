@@ -815,13 +815,14 @@ class LinearProgrammingProblem {
 		var paragraph, D;
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["given_LPP"][language]));
-		paragraph.appendChild(document.createElement("br"));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
 		paragraph.appendChild(MathML.done(this.toMathML()));
 		place.appendChild(paragraph);
 		var canonicalForm, transformations = [];
 		var isMinProblem = !this.objective.maximise;
-		paragraph = document.createElement("p");
 		if (this.alreadyInCanonicalForm()) {
+			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["already_canonical_form"][language]));
 			place.appendChild(paragraph);
 			canonicalForm = this.copy();
@@ -831,6 +832,7 @@ class LinearProgrammingProblem {
 			transformations = t[1];
 			var hasTransformations = (transformations.length > 0);
 			if (hasTransformations) {
+				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["replacing_variables_without_nonnegativity"][language] + " "));
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
@@ -848,10 +850,12 @@ class LinearProgrammingProblem {
 						paragraph.appendChild(textNode("."));
 					}
 				}
+				place.appendChilde(paragraph);
 			}
-			paragraph.appendChild(document.createElement("br"));
+			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["LPP_transformed_into_canonical_form"][language]));
-			paragraph.appendChild(document.createElement("br"));
+			place.append(paragraph);
+			paragraph = document.createElement("p");
 			paragraph.appendChild(MathML.done(canonicalForm.toMathML()));
 			place.appendChild(paragraph);
 		}
@@ -866,12 +870,14 @@ class LinearProgrammingProblem {
 		if (hasPhaseI) {
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["Auxiliary_problem_has_to_be_solved"][language]));
-			paragraph.appendChild(document.createElement("br"));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["Preparation_of_table_of_auxiliary_problem"][language]));
-			paragraph.appendChild(document.createElement("br"));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
 			var rowsToSubstract = solution["phaseI"]["rowsToSubstract"];
 			if (rowsToSubstract.length === 1) {
 				paragraph.appendChild(textNode(localization["One_row_to_substract_(auxiliary_problem)"][language](rowsToSubstract[0])));
@@ -881,40 +887,45 @@ class LinearProgrammingProblem {
 			for (var i = 0; i < solution["phaseI"]["rowsToSubstract"].length; i++) {
 				simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, solution["phaseI"]["rowsToSubstract"][i]);
 			}
-			paragraph.appendChild(document.createElement("br"));
+			place.appendChild(paragraph);
+			paragraph = document.createElement("p");
 			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");;
 			paragraph.appendChild(textNode(localization["start_iterations_(auxiliary_problem)"][language]));
+			place.appendChild(paragraph);
 			var listOfPivots = solution["phaseI"]["listOfPivots"];
 			for (var i = 0; i < listOfPivots.length; i++) {
 				var row = listOfPivots[i][0];
 				var col = listOfPivots[i][1];
-				paragraph.appendChild(document.createElement("br"));
+				paragraph = document.createElement("p");
 				paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
+				place.appendChild(paragraph);
 				simplexTable.moveToNextIteration(row, col);
 			}
-			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["resulting_table"][language]));
-			paragraph.appendChild(document.createElement("br"));
-			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
+			paragraph.appendChild(MathML.done(simplexTable.toMathML()));
+			place.appendChild(paragraph);
 			if (solution["phaseI"]["success"]) {
+				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["feasible_plan_found"][language]));
-				paragraph.appendChild(document.createElement("br"));
+				place.appendChild(paragraph);
+				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["remove_columns_of_artificial_variables"][language]));
-				paragraph.appendChild(document.createElement("br"));
+				place.appendChild(paragraph);
 				var columnsToRemove = solution["phaseII"]["columnsToRemove"];
 				for (var i = columnsToRemove.length - 1; i >= 0; i--) {
 					simplexTable.removeColumn(columnsToRemove[i]);
 				}
+				paragraph = document.createElement("p");
 				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 				place.appendChild(paragraph);
 				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["last_row_according_to_objective"][language]));
-				paragraph.appendChild(document.createElement("br"));
+				place.appendChild(paragraph);
 				for (var i = 0; i < simplexTable.table.cols; i++) {
 					if (i < simplexTable.objective.linexp.coeffs.length) {
 						simplexTable.table.matrix[simplexTable.table.rows-1][i] = simplexTable.objective.linexp.coeffs[i].opposite();
@@ -922,21 +933,24 @@ class LinearProgrammingProblem {
 						simplexTable.table.matrix[simplexTable.table.rows-1][i] = new Fraction(0);
 					}
 				}
+				paragraph = document.createElement("p");
 				paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 				place.appendChild(paragraph);
 				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["Preparation_of_table_of_main_problem"][language]));
+				place.appendChild(paragraph);
 				for (var i = 0; i < solution["phaseII"]["rowsToSubstract"].length; i++) {
 					var r = solution["phaseII"]["rowsToSubstract"][i][0];
 					var k = solution["phaseII"]["rowsToSubstract"][i][1];
-					paragraph.appendChild(document.createElement("br"));
+					paragraph = document.createElement("p");
 					paragraph.appendChild(textNode(localization["substract_multiplied_row"][language](r)));
 					paragraph.appendChild(MathML.done(MathML.row(k.toMathML())));
 					paragraph.appendChild(textNode("."));
+					place.appendChild(paragraph);
 					simplexTable.table.substractMultipliedRow(simplexTable.table.rows-1, r, k);
 				}
-				place.appendChild(paragraph);
 			} else {
+				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["set_of_plans_is_empty"][language]));
 				place.appendChild(paragraph);
 				return;
@@ -952,22 +966,25 @@ class LinearProgrammingProblem {
 		}
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["resulting_table"][language]));
-		paragraph.appendChild(document.createElement("br"));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
 		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 		place.appendChild(paragraph);
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["start_iterations"][language]));
+		place.appendChild(paragraph);
 		for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
 			var row = solution["phaseII"]["listOfPivots"][i][0];
 			var col = solution["phaseII"]["listOfPivots"][i][1];
-			paragraph.appendChild(document.createElement("br"));
+			paragraph = document.createElement("p");
 			paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
+			place.appendChild(paragraph);
 			simplexTable.moveToNextIteration(row, col);
 		}
-		place.appendChild(paragraph);
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["resulting_table"][language]));
-		paragraph.appendChild(document.createElement("br"));
+		place.appendChild(paragraph);
+		paragraph = document.createElement("p");
 		paragraph.appendChild(MathML.done(simplexTable.toMathML()));
 		place.appendChild(paragraph);
 		if (solution["phaseII"]["success"]) {
@@ -1022,7 +1039,6 @@ class LinearProgrammingProblem {
 					paragraph.appendChild(MathML.done(MathML.row(math)));
 					place.appendChild(paragraph);
 				}
-				paragraph = document.createElement("p");
 				var t1 = [], t2 = [];
 				for (var i = 0; i < newOptimalPlan.length; i++) {
 					t1 = t1.concat(Variable.defaultVariables(new Variable(i)));
@@ -1035,6 +1051,7 @@ class LinearProgrammingProblem {
 				var t = MathML.brackets(t1, "(", ")");
 				t.push(new MathML("mo", textNode("=")));
 				t = t.concat(MathML.brackets(t2, "(", ")"));
+				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["the_optimal_plan"][language]));
 				paragraph.appendChild(MathML.done(MathML.row(t)));
 				paragraph.appendChild(textNode("."));

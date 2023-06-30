@@ -111,7 +111,7 @@ localization["resulting_table"]["lv"] = "Iegūta šāda tabula:";
 localization["resulting_table"]["en"] = "Resulting table:";
 
 localization["feasible_plan_found"] = {};
-localization["feasible_plan_found"]["lv"] = "Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrast atbalsta plāns.";
+localization["feasible_plan_found"]["lv"] = "Palīgproblēmas mērķa funkcijas maksimālā vērtība ir nulle, tātad ir atrasts atbalsta plāns.";
 localization["feasible_plan_found"]["en"] = "Maximum value of the goal function (for auxiliary problem) is zero. That means that a feasible plan is found.";
 
 localization["remove_columns_of_artificial_variables"] = {};
