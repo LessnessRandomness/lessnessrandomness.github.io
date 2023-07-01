@@ -850,7 +850,7 @@ class LinearProgrammingProblem {
 						paragraph.appendChild(textNode("."));
 					}
 				}
-				place.appendChilde(paragraph);
+				place.appendChild(paragraph);
 			}
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["LPP_transformed_into_canonical_form"][language]));
