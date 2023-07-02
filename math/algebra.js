@@ -260,13 +260,46 @@ class Fraction {
 		copy.denom = copy.denom ** n;
 		return copy;
 	}
-	abs() {
+	abs() { // returns BigInt
 		var copy = this.copy();
 		if (copy.numer < 0n)
 			copy.numer = -copy.numer;
 		if (copy.denom < 0n)
 			copy.denom = -copy.denom;
 		return copy;
+	}
+	floor() { // returns BigInt
+		var copy = this.copy();
+		copy = copy.reduce();
+		var t = copy.numer / copy.denom;
+		if (copy.numer % copy.denom === 0n)
+			return t;
+		if (copy.numer <= 0n)
+			return (t - 1n);
+		return t;
+	}
+	ceiling() { // returns BigInt
+		var copy = this.copy();
+		copy = copy.reduce();
+		var t = copy.numer / copy.denom;
+		if (copy.numer % copy.denom === 0n)
+			return t;
+		if (copy.numer >= 0n)
+			return (t + 1n);
+		return t;
+	}
+	toString() {
+		if (this.numer === 0n) {
+			return "0";
+		} else if (this.denom === 1n && this.numer > 0n) {
+			return this.numer.toString();
+		} else if (this.denom === 1n && this.numer < 0n) {
+			return "-" + (-this.numer).toString();
+		} else if (this.numer > 0n) {
+			return this.numer.toString() + "/" + this.denom.toString();
+		} else {
+			return "-" + (-this.numer).toString() + "/" + this.denom.toString();
+		}
 	}
 	toMathML() {
 		if (this.numer === 0n) {

@@ -1351,8 +1351,8 @@ class LinearProgrammingProblem {
 			inputFields["nonnegativeVariables"] = document.createElement("input");
 			inputFields["nonnegativeVariables"].type = "text";
 			inputFields["nonnegativeVariables"].size = 6;
-			inputFields["nonnegativeVariables"].value = "1 2";
-			inputFields["nonnegativeVariables"].disabled = true;
+			//inputFields["nonnegativeVariables"].value = "1 2";
+			//inputFields["nonnegativeVariables"].disabled = true;
 			paragraph.appendChild(inputFields["nonnegativeVariables"]);
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
@@ -1430,7 +1430,7 @@ class LinearProgrammingProblem {
 				}
 				inputFields["nonnegativeVariables"].disabled = true;
 				buttons["final"].disabled = true;
-				LPP.draw(place, new Fraction(200));
+				LPP.draw(place);
 			}
 		}
 	}
@@ -1529,31 +1529,7 @@ function fractionToDecimal(f) {
 	return (Number(f.numer * 1000000n / f.denom)/1000000);
 }
 
-Polytope.prototype.draw = function(place, width) {
-	var info = this.information();
-	if (info["nonempty"]) {
-		if (info["bounded"]) {
-			var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
-			var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
-			var k = width.divide(x2.substract(x1));
-			var height = y2.substract(y1).multiply(k);
-			var draw = SVG().addTo(place).size(fractionToDecimal(width), fractionToDecimal(height));
-			var vertices = this.allVertices();
-			sortPoints(vertices);
-			vertices = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
-			vertices = vertices.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
-			draw.rect(fractionToDecimal(width), fractionToDecimal(height)).fill("none").stroke({width: 1, color: "black"});
-			draw.polygon(vertices).fill('green'); //.stroke({width: 1, color: "black"});
-		} else {
-			throw("This polytope isn't bounded");
-		}
-	} else {
-		throw("This polytope is empty");
-	}
-}
-
-LinearProgrammingProblem.prototype.draw = function(place, width) {
-	var padding = new Fraction(50);
+LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(100)) {
 	var numberOfVariables = this.objective.linexp.coeffs.length;
 	if (numberOfVariables !== 2) {
 		var paragraph = document.createElement("p");
@@ -1561,46 +1537,100 @@ LinearProgrammingProblem.prototype.draw = function(place, width) {
 		place.appendChild(paragraph);
 		return;
 	}
+	
 	var info = this.polytope.information();
 	if (info["nonempty"]) {
 		if (info["bounded"]) {
+			var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 			var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
 			var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
-			var k = width.divide(x2.substract(x1));
-			var height = y2.substract(y1).multiply(k);
+			var width = x2.substract(x1).add(unit).multiply(scale);
+			var height = y2.substract(y1).add(unit).multiply(scale);
 			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-			svg.setAttribute("width", fractionToDecimal(width.add(padding).add(padding)));
-			svg.setAttribute("height", fractionToDecimal(height.add(padding).add(padding)));
+			svg.setAttribute("width", fractionToDecimal(width));
+			svg.setAttribute("height", fractionToDecimal(height));
+			svg.setAttribute("background-color", "yellow");
 			place.appendChild(svg);
+
+			var axisX = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			axisX.setAttribute("x1", fractionToDecimal(zero));
+			axisX.setAttribute("y1", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
+			axisX.setAttribute("x2", fractionToDecimal(width));
+			axisX.setAttribute("y2", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
+			axisX.setAttribute("stroke", "black");
+			svg.appendChild(axisX);
+
+			var axisY = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			axisY.setAttribute("x1", fractionToDecimal(half.substract(x1).multiply(scale)));
+			axisY.setAttribute("y1", fractionToDecimal(zero));
+			axisY.setAttribute("x2", fractionToDecimal(half.substract(x1).multiply(scale)));
+			axisY.setAttribute("y2", fractionToDecimal(height));
+			axisY.setAttribute("stroke", "black");
+			svg.appendChild(axisY);
+			
+			var leastIntegerX = x1.substract(half).ceiling(), largestIntegerX = x2.add(half).floor();
+			var leastIntegerY = y1.substract(half).ceiling(), largestIntegerY = y2.add(half).floor();
+			//alert("leastIntegerY = " + leastIntegerY.toString());
+			//alert("largestIntegerY = " + largestIntegerY.toString());
+			for (var i = leastIntegerX; i <= largestIntegerX; i += 1n) {
+				if (i !== 0n) {
+					var verticalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+					var t = half.substract(x1).add(new Fraction(i)).multiply(scale);
+					verticalLine.setAttribute("x1", fractionToDecimal(t));
+					verticalLine.setAttribute("y1", fractionToDecimal(zero));
+					verticalLine.setAttribute("x2", fractionToDecimal(t));
+					verticalLine.setAttribute("y2", fractionToDecimal(height));
+					verticalLine.setAttribute("stroke", "gray");
+					verticalLine.setAttribute("stroke-dasharray", "4");
+					svg.appendChild(verticalLine);
+				}
+			}
+			for (var i = leastIntegerY; i <= largestIntegerY; i += 1n) {
+				if (i !== 0n) {
+					var horizontalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+					var t = height.substract(half.substract(y1).add(new Fraction(i)).multiply(scale));
+					horizontalLine.setAttribute("x1", fractionToDecimal(zero));
+					horizontalLine.setAttribute("y1", fractionToDecimal(t));
+					horizontalLine.setAttribute("x2", fractionToDecimal(width));
+					horizontalLine.setAttribute("y2", fractionToDecimal(t));
+					horizontalLine.setAttribute("stroke", "gray");
+					horizontalLine.setAttribute("stroke-dasharray", "4");
+					svg.appendChild(horizontalLine);
+				}
+			}
+			
 			var vertices = this.polytope.allVertices();
 			sortPoints(vertices);
-			var temp = [];
+			var verticesAsFractions = [];
 			for (var i = 0; i < vertices.length; i++) {
 				var v1 = vertices[i];
 				var v2 = vertices[(i+1)%vertices.length];
 				if (!v1[0].equalTo(v2[0]) || !v1[1].equalTo(v2[1])) {
-					temp.push(v1);
+					verticesAsFractions.push(v1);
 				}
 			}
-			vertices = temp;
-			vertices = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
-			vertices = vertices.map(x => [fractionToDecimal(x[0].add(padding)), fractionToDecimal(x[1].add(padding))]);
+			
+			vertices = verticesAsFractions.map(x => [x[0].substract(x1).add(half).multiply(scale), height.substract(x[1].substract(y1).add(half).multiply(scale))]);
+			vertices = vertices.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
 			var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
 			var points = "";
 			for (var i = 0; i < vertices.length; i++) {
 				points += vertices[i][0].toString() + "," + vertices[i][1].toString() + " ";
 			}
 			polygon.setAttribute("points", points);
-			polygon.setAttribute("style", "fill:lime");
+			polygon.setAttribute("style", "fill:lime; fill-opacity:50%");
 			svg.appendChild(polygon);
 			
+			
 			for (var i = 0; i < vertices.length; i++) {
-				var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-				circle.setAttribute("cx", vertices[i][0]);
-				circle.setAttribute("cy", vertices[i][1]);
-				circle.setAttribute("r", 4);
-				circle.setAttribute("fill", "red");
-				svg.appendChild(circle);
+				var dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+				dot.setAttribute("cx", vertices[i][0]);
+				dot.setAttribute("cy", vertices[i][1]);
+				dot.setAttribute("r", 4);
+				dot.setAttribute("fill", "red");
+				let s = "Point (" + verticesAsFractions[i][0].toString() + "; " + verticesAsFractions[i][1].toString() + ")";
+				dot.onclick = function() { alert(s); };
+				svg.appendChild(dot);
 			}
 			
 			
