@@ -1246,18 +1246,20 @@ class LinearProgrammingProblem {
 			}
 		}
 	}
-	static getForDrawing(place) {
+	
+	static calculatorWithDrawing(place, language = "en") {
 		var inputFields = {};
 		var buttons = {};
+		var D = {};
 		var paragraph = document.createElement("p");
-		paragraph.appendChild(textNode("Mainīgo skaits: "));
+		paragraph.appendChild(textNode(localization["number_of_variables"][language] + ": "));
 		inputFields["numberOfVariables"] = document.createElement("input");
 		inputFields["numberOfVariables"].type = "text";
 		inputFields["numberOfVariables"].size = 2;
 		inputFields["numberOfVariables"].value = 2;
 		inputFields["numberOfVariables"].disabled = true;
 		paragraph.appendChild(inputFields["numberOfVariables"]);
-		paragraph.appendChild(textNode(" Lineāro ierobežojumu skaits: "));
+		paragraph.appendChild(textNode(" " + localization["number_of_linear_constraints"][language] + ": "));
 		inputFields["numberOfInequalities"] = document.createElement("input");
 		inputFields["numberOfInequalities"].type = "text";
 		inputFields["numberOfInequalities"].size = 2;
@@ -1271,18 +1273,18 @@ class LinearProgrammingProblem {
 			var numberOfVariables = parseInt(inputFields["numberOfVariables"].value);
 			var numberOfInequalities = parseInt(inputFields["numberOfInequalities"].value);
 			if (isNaN(numberOfVariables) || isNaN(numberOfInequalities)) {
-				alert("Ievadi veselus skaitļus, kas lielāki par nulli!");
+				alert(localization["enter_integers_bigger_than_zero"][language]);
 				return;
 			}
 			if (numberOfVariables < 1 || numberOfInequalities < 1) {
-				alert("Ievadi veselus skaitļus, kas lielāki par nulli!");
+				alert(localization["enter_integers_bigger_than_zero"][language]);
 				return;
 			}
 			inputFields["numberOfVariables"].disabled = true;
 			inputFields["numberOfInequalities"].disabled = true;
 			buttons["start"].disabled = true;
 			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Izvēlies 'max', ja vēlies maksimizēt mērķa funkciju, vai arī 'min', ja vēlies to minimizēt: "));
+			paragraph.appendChild(textNode(localization["choose_max_or_min"][language] + ": "));
 			inputFields["maxOrMin"] = document.createElement("select");
 			var options = ["max", "min"];
 			for (var i = 0; i < options.length; i++) {
@@ -1294,7 +1296,7 @@ class LinearProgrammingProblem {
 			paragraph.appendChild(inputFields["maxOrMin"]);
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Ievadi mērķa funkcijas koeficientus!"));
+			paragraph.appendChild(textNode(localization["enter_the_objective_function"][language]));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			inputFields["objective"] = [];
@@ -1308,7 +1310,7 @@ class LinearProgrammingProblem {
 			}
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Ievadi LPU nevienādības (koeficientus, zīmes, brīvos locekļus)!"));
+			paragraph.appendChild(textNode(localization["enter_constraints"][language]));
 			place.appendChild(paragraph);
 			inputFields["constraints"] = [];
 			for (var i = 0; i < numberOfInequalities; i++) {
@@ -1343,7 +1345,7 @@ class LinearProgrammingProblem {
 				place.appendChild(paragraph);
 			}
 			paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Abi divi mainīgie būs obligāti nenegatīvi, jo citādi sanāk palielināt mainīgo skaitu un vairs nevar uzzīmēt plaknē."));
+			paragraph.appendChild(textNode(localization["enter_nonnegative_variables"][language]));
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
 			inputFields["nonnegativeVariables"] = document.createElement("input");
@@ -1364,7 +1366,7 @@ class LinearProgrammingProblem {
 				for (var i = 0; i < numberOfVariables; i++) {
 					var fraction = Fraction.parse(inputFields["objective"][i].value);
 					if (fraction === undefined) {
-						alert("Ievadītais mērķa funkcijas " + (i+1).toString() + ". koeficients nav ievadīts pareizi!");
+						alert(localization["wrong_coefficient_of_the_objective"][language]((i+1).toString()));
 						return;
 					}
 					coeffs.push(fraction);
@@ -1376,7 +1378,7 @@ class LinearProgrammingProblem {
 					for (var j = 0; j < numberOfVariables; j++) {
 						var fraction = Fraction.parse(inputFields["constraints"][i]["coeffs"][j].value);
 						if (fraction === undefined) {
-							alert((i+1).toString() + ". nevienādības " + (j+1).toString() + ". koeficients nav ievadīts pareizi!");
+							alert(localization["wrong_coefficient_of_constraint"][language]((i+1).toString(), (j+1).toString()));
 							return;
 						}
 						coeffs.push(fraction);
@@ -1385,7 +1387,7 @@ class LinearProgrammingProblem {
 					var sign = ["le", "eq", "ge"][index];
 					var fraction = Fraction.parse(inputFields["constraints"][i]["B"].value);
 					if (fraction === undefined) {
-						alert((i+1).toString() + ". nevienādības brīvais loceklis nav ievadīts pareizi!");
+						alert(localization["wrong_constant_of_constraint"][language]((i+1).toString()));
 						return;
 					}
 					constraints.push(new LinearConstraint(new LinearExpression(coeffs), fraction, sign));
@@ -1396,15 +1398,15 @@ class LinearProgrammingProblem {
 					if (indexes[i] !== "") {
 						var index = parseInt(indexes[i]);
 						if (isNaN(index)) {
-							alert("Nenegatīvo mainīgo sarakstā ir ieviesusies kļūda!");
+							alert(localization["error_in_the_nonnegative_list"][language]);
 							return;
 						} else {
 							if (index < 1) {
-								alert("Nenegatīvo mainīgo sarakstā ir ieklīdusi vērtība, kas mazāka par 1");
+								alert(localization["index_less_than_1"][language]);
 								return;
 							}
 							if (index > numberOfVariables) {
-								alert("Pavisam ir " + numberOfVariables.toString() + " mainīgie. Sarakstā ir ieklīdusi vērtība, kas ir lielāka par mainīgo skaitu.");
+								alert(localization["index_bigger_than_number_of_variables"][language](numberOfVariables.toString()));
 								return;
 							}
 							if (nonnegativeVariables.indexOf(index - 1) < 0) {
@@ -1426,11 +1428,13 @@ class LinearProgrammingProblem {
 					inputFields["constraints"][i]["sign"].disabled = true;
 					inputFields["constraints"][i]["B"].disabled = true;
 				}
+				inputFields["nonnegativeVariables"].disabled = true;
 				buttons["final"].disabled = true;
 				LPP.draw(place, new Fraction(200));
 			}
 		}
 	}
+		
 }
 
 // 2d polytopes and 2d linear programming
@@ -1502,17 +1506,23 @@ function compareVectors(v1, v2) {
 	var det = v1[0].multiply(v2[1]).substract(v1[1].multiply(v2[0]));
 	var zero = new Fraction(0);
 	if (det.lessThan(zero)) {
-		return true;
+		return 1;
 	}
 	if (zero.lessThan(det)) {
-		return false;
+		return -1;
 	}
-	return vectorSquared(v2).lessThan(vectorSquared(v1));
+	var s1 = vectorSquared(v1);
+	var s2 = vectorSquared(v2);
+	if (s2.lessThan(s1))
+		return 1
+	if (s1.lessThan(s2))
+		return -1
+	return 0;
 }
 
 function sortPoints(arrayOfPoints) {
 	var t = [arrayOfPoints[0][0], arrayOfPoints[0][1]];
-	arrayOfPoints.sort((v1, v2) => compareVectors(vectorSubstract(v1, t), vectorSubstract(v2, t)));
+	var a = arrayOfPoints.sort((v1, v2) => compareVectors(vectorSubstract(v1, t), vectorSubstract(v2, t)));
 }
 
 function fractionToDecimal(f) {
@@ -1542,7 +1552,8 @@ Polytope.prototype.draw = function(place, width) {
 	}
 }
 
-LinearProgrammingProblem.prototype.draw = function(place, width, padding = 5) {
+LinearProgrammingProblem.prototype.draw = function(place, width) {
+	var padding = new Fraction(50);
 	var numberOfVariables = this.objective.linexp.coeffs.length;
 	if (numberOfVariables !== 2) {
 		var paragraph = document.createElement("p");
@@ -1557,7 +1568,10 @@ LinearProgrammingProblem.prototype.draw = function(place, width, padding = 5) {
 			var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
 			var k = width.divide(x2.substract(x1));
 			var height = y2.substract(y1).multiply(k);
-			var draw = SVG().addTo(place).size(fractionToDecimal(width), fractionToDecimal(height));
+			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			svg.setAttribute("width", fractionToDecimal(width.add(padding).add(padding)));
+			svg.setAttribute("height", fractionToDecimal(height.add(padding).add(padding)));
+			place.appendChild(svg);
 			var vertices = this.polytope.allVertices();
 			sortPoints(vertices);
 			var temp = [];
@@ -1569,13 +1583,27 @@ LinearProgrammingProblem.prototype.draw = function(place, width, padding = 5) {
 				}
 			}
 			vertices = temp;
-			var verticesInSVG = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
-			verticesInSVG = verticesInSVG.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
-			draw.rect(fractionToDecimal(width), fractionToDecimal(height)).fill("none").stroke({width: 1, color: "black"});
-			draw.polygon(verticesInSVG).fill('green');
+			vertices = vertices.map(x => [x[0].substract(x1).multiply(k), height.substract(x[1].substract(y1).multiply(k))]);
+			vertices = vertices.map(x => [fractionToDecimal(x[0].add(padding)), fractionToDecimal(x[1].add(padding))]);
+			var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+			var points = "";
 			for (var i = 0; i < vertices.length; i++) {
-				draw.circle({cx: verticesInSVG[i][0], cy: verticesInSVG[i][1], r: 4}).fill("red").stroke({width: 1, color: "red"});
+				points += vertices[i][0].toString() + "," + vertices[i][1].toString() + " ";
 			}
+			polygon.setAttribute("points", points);
+			polygon.setAttribute("style", "fill:lime");
+			svg.appendChild(polygon);
+			
+			for (var i = 0; i < vertices.length; i++) {
+				var circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+				circle.setAttribute("cx", vertices[i][0]);
+				circle.setAttribute("cy", vertices[i][1]);
+				circle.setAttribute("r", 4);
+				circle.setAttribute("fill", "red");
+				svg.appendChild(circle);
+			}
+			
+			
 		} else {
 			var paragraph = document.createElement("p");
 			paragraph.appendChild(textNode("Plānu kopa nav ierobežota, tāpēc neko nezīmēšu."));
