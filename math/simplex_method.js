@@ -548,28 +548,6 @@ class Polytope {
 		}
 		return true;
 	}
-	// for 2D case (two variables)
-	allVertices() {
-		var constraints = this.copy().constraints;
-		if (this.nonnegativeVariables.indexOf(0) > -1) {
-			constraints.push(new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(0)]), new Fraction(0), "ge"));
-		}
-		if (this.nonnegativeVariables.indexOf(1) > -1) {
-			constraints.push(new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(0), "ge"));
-		}
-		var vertices = [];
-		for (var i = 0; i < constraints.length; i++) {
-			for (var j = i + 1; j < constraints.length; j++) {
-				var intersectionPoint = constraints[i].intersection(constraints[j]);
-				if (intersectionPoint !== undefined) {
-					if (this.hasPoint(intersectionPoint)) {
-						vertices.push(intersectionPoint);
-					}
-				}
-			}
-		}
-		return vertices;
-	}
 	toMathML() {
 		var contents = this.constraints.map((x) => [MathML.row(x.toMathML())]);
 		var numberOfVariables = this.constraints[0].linexp.coeffs.length;
@@ -1452,7 +1430,7 @@ function unitVector(numberOfDimensions, i) {
 }
 
 Polytope.prototype.information = function() {
-	var inf = {}, t = [];
+	var info = {}, t = [];
 	var numberOfVariables = this.constraints[0].linexp.coeffs.length;
 	for (var i = 0; i < numberOfVariables; i++) {
 		t.push(new Fraction(0));
@@ -1461,9 +1439,10 @@ Polytope.prototype.information = function() {
 	var problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
 	var solution = problem.toSimplexTable().solution();
 	if (solution["phaseI"]["success"]) {
-		inf["nonempty"] = true;
-		inf["bounded"] = true;
-		inf["boundaries"] = [];
+		info["nonempty"] = true;
+		info["bounded"] = true;
+		
+		info["boundaries"] = [];
 		for (var i = 0; i < numberOfVariables; i++) {
 			t = [];
 			var linexp = new LinearExpression(unitVector(numberOfVariables, i));
@@ -1474,7 +1453,7 @@ Polytope.prototype.information = function() {
 				t.push(solution["phaseII"]["objectiveValue"].opposite());
 			} else {
 				t.push(undefined);
-				inf["bounded"] = false;
+				info["bounded"] = false;
 			}			
 			objective = new LinearObjective(linexp);
 			problem = new LinearProgrammingProblem(objective, this.constraints, this.nonnegativeVariables);
@@ -1483,14 +1462,15 @@ Polytope.prototype.information = function() {
 				t.push(solution["phaseII"]["objectiveValue"]);
 			} else {
 				t.push(undefined);
-				inf["bounded"] = false;
+				info["bounded"] = false;
 			}
-			inf["boundaries"].push(t);
+			info["boundaries"].push(t);
+			info["vertices"] = this.allVertices();
 		}
-		return inf;
+		return info;
 	} else {
-		inf["nonempty"] = false;
-		return inf;
+		info["nonempty"] = false;
+		return info;
 	}
 }
 
@@ -1521,12 +1501,148 @@ function compareVectors(v1, v2) {
 }
 
 function sortPoints(arrayOfPoints) {
-	var t = [arrayOfPoints[0][0], arrayOfPoints[0][1]];
-	var a = arrayOfPoints.sort((v1, v2) => compareVectors(vectorSubstract(v1, t), vectorSubstract(v2, t)));
+	if (arrayOfPoints.length > 0) {
+		var t = [arrayOfPoints[0][0], arrayOfPoints[0][1]];
+		arrayOfPoints.sort((v1, v2) => compareVectors(vectorSubstract(v1, t), vectorSubstract(v2, t)));
+	}
+}
+
+Polytope.prototype.allVertices = function() {
+	var constraints = this.copy().constraints;
+	if (this.nonnegativeVariables.indexOf(0) > -1) {
+		constraints.push(new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(0)]), new Fraction(0), "ge"));
+	}
+	if (this.nonnegativeVariables.indexOf(1) > -1) {
+		constraints.push(new LinearConstraint(new LinearExpression([new Fraction(0), new Fraction(1)]), new Fraction(0), "ge"));
+	}
+	var vertices = [];
+	for (var i = 0; i < constraints.length; i++) {
+		for (var j = i + 1; j < constraints.length; j++) {
+			var intersectionPoint = constraints[i].intersection(constraints[j]);
+			if (intersectionPoint !== undefined) {
+				if (this.hasPoint(intersectionPoint)) {
+					vertices.push(intersectionPoint);
+				}
+			}
+		}
+	}
+	sortPoints(vertices);
+	var verticesWithoutRepetitions = [];
+	for (var i = 0; i < vertices.length; i++) {
+		var v1 = vertices[i];
+		var v2 = vertices[(i+1)%vertices.length];
+		if (!v1[0].equalTo(v2[0]) || !v1[1].equalTo(v2[1])) {
+			verticesWithoutRepetitions.push(v1);
+		}
+	}
+	return verticesWithoutRepetitions;
 }
 
 function fractionToDecimal(f) {
 	return (Number(f.numer * 1000000n / f.denom)/1000000);
+}
+
+Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale = new Fraction(100)) {
+	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
+	var info = this.information();
+	if (!info["bounded"])
+		throw new Error("The polytope isn't bounded!");
+	
+	var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
+	var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
+	var width = bx2.substract(bx1).add(unit).multiply(scale);
+	var height = by2.substract(by1).add(unit).multiply(scale);
+
+	var verticesAsFractions = info["vertices"];
+	vertices = verticesAsFractions.map(x => [x[0].substract(bx1).add(half).multiply(scale), height.substract(x[1].substract(by1).add(half).multiply(scale))]);
+	vertices = vertices.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
+	
+	var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+	var points = "";
+	for (var i = 0; i < vertices.length; i++) {
+		points += vertices[i][0].toString() + "," + vertices[i][1].toString() + " ";
+	}
+	polygon.setAttribute("points", points);
+	polygon.setAttribute("fill", "lime");
+	polygon.setAttribute("fill-opacity", "75%");
+	polygon.setAttribute("stroke", "green");
+	polygon.setAttribute("stroke-width", "2");
+	svg.appendChild(polygon);
+			
+	for (var i = 0; i < vertices.length; i++) {
+		var dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		dot.setAttribute("cx", vertices[i][0]);
+		dot.setAttribute("cy", vertices[i][1]);
+		dot.setAttribute("r", 4);
+		dot.setAttribute("fill", "red");
+		let s = "(" + verticesAsFractions[i][0].toString() + "; " + verticesAsFractions[i][1].toString() + ")";
+		var title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+		title.appendChild(textNode(s));
+		dot.appendChild(title);
+		svg.appendChild(dot);
+	}
+}
+
+function drawAxisEtc(svg, x1, x2, y1, y2, scale = new Fraction(100)) {
+	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
+	var width = x2.substract(x1).add(unit).multiply(scale);
+	var height = y2.substract(y1).add(unit).multiply(scale);
+	
+	var axisX = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	axisX.setAttribute("x1", fractionToDecimal(zero));
+	axisX.setAttribute("y1", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
+	axisX.setAttribute("x2", fractionToDecimal(width));
+	axisX.setAttribute("y2", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
+	axisX.setAttribute("stroke", "black");
+	svg.appendChild(axisX);
+
+	var axisY = document.createElementNS("http://www.w3.org/2000/svg", "line");
+	axisY.setAttribute("x1", fractionToDecimal(half.substract(x1).multiply(scale)));
+	axisY.setAttribute("y1", fractionToDecimal(zero));
+	axisY.setAttribute("x2", fractionToDecimal(half.substract(x1).multiply(scale)));
+	axisY.setAttribute("y2", fractionToDecimal(height));
+	axisY.setAttribute("stroke", "black");
+	svg.appendChild(axisY);
+	
+	var leastIntegerX = x1.substract(half).ceiling(), largestIntegerX = x2.add(half).floor();
+	var leastIntegerY = y1.substract(half).ceiling(), largestIntegerY = y2.add(half).floor();
+	for (var i = leastIntegerX; i <= largestIntegerX; i += 1n) {
+		if (i !== 0n) {
+			var verticalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			var t = half.substract(x1).add(new Fraction(i)).multiply(scale);
+			verticalLine.setAttribute("x1", fractionToDecimal(t));
+			verticalLine.setAttribute("y1", fractionToDecimal(zero));
+			verticalLine.setAttribute("x2", fractionToDecimal(t));
+			verticalLine.setAttribute("y2", fractionToDecimal(height));
+			verticalLine.setAttribute("stroke", "gray");
+			verticalLine.setAttribute("stroke-dasharray", "4");
+			svg.appendChild(verticalLine);
+		}
+	}
+	for (var i = leastIntegerY; i <= largestIntegerY; i += 1n) {
+		if (i !== 0n) {
+			var horizontalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			var t = height.substract(half.substract(y1).add(new Fraction(i)).multiply(scale));
+			horizontalLine.setAttribute("x1", fractionToDecimal(zero));
+			horizontalLine.setAttribute("y1", fractionToDecimal(t));
+			horizontalLine.setAttribute("x2", fractionToDecimal(width));
+			horizontalLine.setAttribute("y2", fractionToDecimal(t));
+			horizontalLine.setAttribute("stroke", "gray");
+			horizontalLine.setAttribute("stroke-dasharray", "4");
+			svg.appendChild(horizontalLine);
+		}
+	}
+}
+
+function makeSVG(place, x1, x2, y1, y2, scale = new Fraction(100)) {
+	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
+	var width = x2.substract(x1).add(unit).multiply(scale);
+	var height = y2.substract(y1).add(unit).multiply(scale);
+	var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("width", fractionToDecimal(width));
+	svg.setAttribute("height", fractionToDecimal(height));
+	place.appendChild(svg);
+	return svg;
 }
 
 LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(100)) {
@@ -1537,107 +1653,57 @@ LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(1
 		place.appendChild(paragraph);
 		return;
 	}
-	
+
+	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var info = this.polytope.information();
+	var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
+	var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
+
 	if (info["nonempty"]) {
 		if (info["bounded"]) {
-			var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
-			var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
-			var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
-			var width = x2.substract(x1).add(unit).multiply(scale);
-			var height = y2.substract(y1).add(unit).multiply(scale);
-			var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-			svg.setAttribute("width", fractionToDecimal(width));
-			svg.setAttribute("height", fractionToDecimal(height));
-			svg.setAttribute("background-color", "yellow");
-			place.appendChild(svg);
-
-			var axisX = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			axisX.setAttribute("x1", fractionToDecimal(zero));
-			axisX.setAttribute("y1", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
-			axisX.setAttribute("x2", fractionToDecimal(width));
-			axisX.setAttribute("y2", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
-			axisX.setAttribute("stroke", "black");
-			svg.appendChild(axisX);
-
-			var axisY = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			axisY.setAttribute("x1", fractionToDecimal(half.substract(x1).multiply(scale)));
-			axisY.setAttribute("y1", fractionToDecimal(zero));
-			axisY.setAttribute("x2", fractionToDecimal(half.substract(x1).multiply(scale)));
-			axisY.setAttribute("y2", fractionToDecimal(height));
-			axisY.setAttribute("stroke", "black");
-			svg.appendChild(axisY);
-			
-			var leastIntegerX = x1.substract(half).ceiling(), largestIntegerX = x2.add(half).floor();
-			var leastIntegerY = y1.substract(half).ceiling(), largestIntegerY = y2.add(half).floor();
-			//alert("leastIntegerY = " + leastIntegerY.toString());
-			//alert("largestIntegerY = " + largestIntegerY.toString());
-			for (var i = leastIntegerX; i <= largestIntegerX; i += 1n) {
-				if (i !== 0n) {
-					var verticalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-					var t = half.substract(x1).add(new Fraction(i)).multiply(scale);
-					verticalLine.setAttribute("x1", fractionToDecimal(t));
-					verticalLine.setAttribute("y1", fractionToDecimal(zero));
-					verticalLine.setAttribute("x2", fractionToDecimal(t));
-					verticalLine.setAttribute("y2", fractionToDecimal(height));
-					verticalLine.setAttribute("stroke", "gray");
-					verticalLine.setAttribute("stroke-dasharray", "4");
-					svg.appendChild(verticalLine);
-				}
-			}
-			for (var i = leastIntegerY; i <= largestIntegerY; i += 1n) {
-				if (i !== 0n) {
-					var horizontalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-					var t = height.substract(half.substract(y1).add(new Fraction(i)).multiply(scale));
-					horizontalLine.setAttribute("x1", fractionToDecimal(zero));
-					horizontalLine.setAttribute("y1", fractionToDecimal(t));
-					horizontalLine.setAttribute("x2", fractionToDecimal(width));
-					horizontalLine.setAttribute("y2", fractionToDecimal(t));
-					horizontalLine.setAttribute("stroke", "gray");
-					horizontalLine.setAttribute("stroke-dasharray", "4");
-					svg.appendChild(horizontalLine);
-				}
-			}
-			
-			var vertices = this.polytope.allVertices();
-			sortPoints(vertices);
-			var verticesAsFractions = [];
-			for (var i = 0; i < vertices.length; i++) {
-				var v1 = vertices[i];
-				var v2 = vertices[(i+1)%vertices.length];
-				if (!v1[0].equalTo(v2[0]) || !v1[1].equalTo(v2[1])) {
-					verticesAsFractions.push(v1);
-				}
-			}
-			
-			vertices = verticesAsFractions.map(x => [x[0].substract(x1).add(half).multiply(scale), height.substract(x[1].substract(y1).add(half).multiply(scale))]);
-			vertices = vertices.map(x => [fractionToDecimal(x[0]), fractionToDecimal(x[1])]);
-			var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-			var points = "";
-			for (var i = 0; i < vertices.length; i++) {
-				points += vertices[i][0].toString() + "," + vertices[i][1].toString() + " ";
-			}
-			polygon.setAttribute("points", points);
-			polygon.setAttribute("style", "fill:lime; fill-opacity:50%");
-			svg.appendChild(polygon);
-			
-			
-			for (var i = 0; i < vertices.length; i++) {
-				var dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-				dot.setAttribute("cx", vertices[i][0]);
-				dot.setAttribute("cy", vertices[i][1]);
-				dot.setAttribute("r", 4);
-				dot.setAttribute("fill", "red");
-				let s = "Point (" + verticesAsFractions[i][0].toString() + "; " + verticesAsFractions[i][1].toString() + ")";
-				dot.onclick = function() { alert(s); };
-				svg.appendChild(dot);
-			}
-			
-			
+			var svg = makeSVG(place, x1, x2, y1, y2, scale);
+			drawAxisEtc(svg, x1, x2, y1, y2, scale);
+			this.polytope.drawIfBounded(svg, [[x1, x2], [y1, y2]], scale);
 		} else {
-			var paragraph = document.createElement("p");
-			paragraph.appendChild(textNode("Plānu kopa nav ierobežota, tāpēc neko nezīmēšu."));
-			place.appendChild(paragraph);
+			var verticesAsFractions = info["vertices"];
+			if (verticesAsFractions.length === 0) {
+				var paragraph = document.createElement("p");
+				paragraph.appendChild(textNode("Šāda veida neierobežotu plānu kopu vēl neprotu uzzīmēt."));
+				place.appendChild(paragraph);
+				return;
+			}
+			var minX = verticesAsFractions[0][0], maxX = verticesAsFractions[0][0];
+			var minY = verticesAsFractions[0][1], maxY = verticesAsFractions[0][1];
+			for (var i = 1; i < verticesAsFractions.length; i++) {
+				if (verticesAsFractions[i][0].lessThan(minX))
+					minX = verticesAsFractions[i][0];
+				if (maxX.lessThan(verticesAsFractions[i][0]))
+					maxX = verticesAsFractions[i][0];
+				if (verticesAsFractions[i][1].lessThan(minY))
+					minY = verticesAsFractions[i][1];
+				if (maxY.lessThan(verticesAsFractions[i][1]))
+					maxY = verticesAsFractions[i][1];
+			}
+			var newPolytope = this.polytope.copy();
+			if (x1 === undefined) {
+				newPolytope.constraints.push(new LinearConstraint(new LinearExpression([unit, zero]), minX.substract(unit), "ge"));
+				x1 = minX;
+			}
+			if (x2 == undefined) {
+				newPolytope.constraints.push(new LinearConstraint(new LinearExpression([unit, zero]), maxX.add(unit), "le"));
+				x2 = maxX;
+			}
+			if (y1 === undefined) {
+				newPolytope.constraints.push(new LinearConstraint(new LinearExpression([zero, unit]), minY.substract(unit), "ge"));
+				y1 = minY;
+			}
+			if (y2 === undefined) {
+				newPolytope.constraints.push(new LinearConstraint(new LinearExpression([zero, unit]), maxY.add(unit), "le"));
+				y2 = maxY;
+			}
+			var svg = makeSVG(place, x1, x2, y1, y2, scale);
+			drawAxisEtc(svg, x1, x2, y1, y2, scale);
+			newPolytope.drawIfBounded(svg, x1, x2, y1, y2, scale);
 			return;
 		}
 	} else {
