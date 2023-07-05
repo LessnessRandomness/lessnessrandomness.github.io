@@ -1542,7 +1542,7 @@ function fractionToDecimal(f) {
 	return (Number(f.numer * 1000000n / f.denom)/1000000);
 }
 
-Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale = new Fraction(100)) {
+Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var info = this.information();
 	if (!info["bounded"])
@@ -1550,6 +1550,7 @@ Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale = new
 	
 	var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
 	var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
+	alert(JSON.stringify(bx1)); alert(JSON.stringify(bx2));
 	var width = bx2.substract(bx1).add(unit).multiply(scale);
 	var height = by2.substract(by1).add(unit).multiply(scale);
 
@@ -1583,7 +1584,7 @@ Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale = new
 	}
 }
 
-function drawAxisEtc(svg, x1, x2, y1, y2, scale = new Fraction(100)) {
+function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var width = x2.substract(x1).add(unit).multiply(scale);
 	var height = y2.substract(y1).add(unit).multiply(scale);
@@ -1634,7 +1635,7 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale = new Fraction(100)) {
 	}
 }
 
-function makeSVG(place, x1, x2, y1, y2, scale = new Fraction(100)) {
+function makeSVG(place, x1, x2, y1, y2, scale) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var width = x2.substract(x1).add(unit).multiply(scale);
 	var height = y2.substract(y1).add(unit).multiply(scale);
@@ -1663,7 +1664,7 @@ LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(1
 		if (info["bounded"]) {
 			var svg = makeSVG(place, x1, x2, y1, y2, scale);
 			drawAxisEtc(svg, x1, x2, y1, y2, scale);
-			this.polytope.drawIfBounded(svg, [[x1, x2], [y1, y2]], scale);
+			this.polytope.drawIfBounded(svg, x1, x2, y1, y2, scale);
 		} else {
 			var verticesAsFractions = info["vertices"];
 			if (verticesAsFractions.length === 0) {
