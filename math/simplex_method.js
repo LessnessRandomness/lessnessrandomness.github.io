@@ -1550,7 +1550,6 @@ Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale) {
 	
 	var x1 = info["boundaries"][0][0], x2 = info["boundaries"][0][1];
 	var y1 = info["boundaries"][1][0], y2 = info["boundaries"][1][1];
-	alert(JSON.stringify(bx1)); alert(JSON.stringify(bx2));
 	var width = bx2.substract(bx1).add(unit).multiply(scale);
 	var height = by2.substract(by1).add(unit).multiply(scale);
 
