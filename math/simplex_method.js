@@ -1612,6 +1612,11 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 			verticalLine.setAttribute("stroke-dasharray", "4");
 		}
 		svg.appendChild(verticalLine);
+		var textInSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+		textInSvg.setAttribute("x", fractionToDecimal(half.substract(x1).add(new Fraction(i)).add(new Fraction(1, 10)).multiply(scale)));
+		textInSvg.setAttribute("y", fractionToDecimal(height.substract(half.substract(y1).add(new Fraction(1, 10)).multiply(scale))));
+		textInSvg.appendChild(textNode(i.toString()));
+		svg.appendChild(textInSvg);
 	}
 	for (var i = leastIntegerY; i <= largestIntegerY; i += 1n) {
 		var horizontalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
@@ -1625,6 +1630,11 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 		} else {
 			horizontalLine.setAttribute("stroke", "gray");
 			horizontalLine.setAttribute("stroke-dasharray", "4");
+			var textInSvg = document.createElementNS("http://www.w3.org/2000/svg", "text");
+			textInSvg.setAttribute("x", fractionToDecimal(half.substract(x1).add(new Fraction(1, 10)).multiply(scale)));
+			textInSvg.setAttribute("y", fractionToDecimal(height.substract(half.substract(y1).add(new Fraction(i)).add(new Fraction(1, 10)).multiply(scale))));
+			textInSvg.appendChild(textNode(i.toString()));
+			svg.appendChild(textInSvg);
 		}
 		svg.appendChild(horizontalLine);
 	}
