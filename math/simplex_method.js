@@ -1587,14 +1587,6 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var width = x2.substract(x1).add(unit).multiply(scale);
 	var height = y2.substract(y1).add(unit).multiply(scale);
-	
-	var axisX = document.createElementNS("http://www.w3.org/2000/svg", "line");
-	axisX.setAttribute("x1", fractionToDecimal(zero));
-	axisX.setAttribute("y1", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
-	axisX.setAttribute("x2", fractionToDecimal(width));
-	axisX.setAttribute("y2", fractionToDecimal(height.substract(half.substract(y1).multiply(scale))));
-	axisX.setAttribute("stroke", "black");
-	svg.appendChild(axisX);
 
 	var axisY = document.createElementNS("http://www.w3.org/2000/svg", "line");
 	axisY.setAttribute("x1", fractionToDecimal(half.substract(x1).multiply(scale)));
@@ -1607,30 +1599,34 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 	var leastIntegerX = x1.substract(half).ceiling(), largestIntegerX = x2.add(half).floor();
 	var leastIntegerY = y1.substract(half).ceiling(), largestIntegerY = y2.add(half).floor();
 	for (var i = leastIntegerX; i <= largestIntegerX; i += 1n) {
-		if (i !== 0n) {
-			var verticalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			var t = half.substract(x1).add(new Fraction(i)).multiply(scale);
-			verticalLine.setAttribute("x1", fractionToDecimal(t));
-			verticalLine.setAttribute("y1", fractionToDecimal(zero));
-			verticalLine.setAttribute("x2", fractionToDecimal(t));
-			verticalLine.setAttribute("y2", fractionToDecimal(height));
+		var verticalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		var t = half.substract(x1).add(new Fraction(i)).multiply(scale);
+		verticalLine.setAttribute("x1", fractionToDecimal(t));
+		verticalLine.setAttribute("y1", fractionToDecimal(zero));
+		verticalLine.setAttribute("x2", fractionToDecimal(t));
+		verticalLine.setAttribute("y2", fractionToDecimal(height));
+		if (i === 0n) {
+			verticalLine.setAttribute("stroke", "black");
+		} else {
 			verticalLine.setAttribute("stroke", "gray");
 			verticalLine.setAttribute("stroke-dasharray", "4");
-			svg.appendChild(verticalLine);
 		}
+		svg.appendChild(verticalLine);
 	}
 	for (var i = leastIntegerY; i <= largestIntegerY; i += 1n) {
-		if (i !== 0n) {
-			var horizontalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
-			var t = height.substract(half.substract(y1).add(new Fraction(i)).multiply(scale));
-			horizontalLine.setAttribute("x1", fractionToDecimal(zero));
-			horizontalLine.setAttribute("y1", fractionToDecimal(t));
-			horizontalLine.setAttribute("x2", fractionToDecimal(width));
-			horizontalLine.setAttribute("y2", fractionToDecimal(t));
+		var horizontalLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+		var t = height.substract(half.substract(y1).add(new Fraction(i)).multiply(scale));
+		horizontalLine.setAttribute("x1", fractionToDecimal(zero));
+		horizontalLine.setAttribute("y1", fractionToDecimal(t));
+		horizontalLine.setAttribute("x2", fractionToDecimal(width));
+		horizontalLine.setAttribute("y2", fractionToDecimal(t));
+		if (i === 0n) {
+			horizontalLine.setAttribute("stroke", "black");
+		} else {
 			horizontalLine.setAttribute("stroke", "gray");
 			horizontalLine.setAttribute("stroke-dasharray", "4");
-			svg.appendChild(horizontalLine);
 		}
+		svg.appendChild(horizontalLine);
 	}
 }
 
@@ -1645,7 +1641,7 @@ function makeSVG(place, x1, x2, y1, y2, scale) {
 	return svg;
 }
 
-LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(100)) {
+LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(50)) {
 	var numberOfVariables = this.objective.linexp.coeffs.length;
 	if (numberOfVariables !== 2) {
 		var paragraph = document.createElement("p");
