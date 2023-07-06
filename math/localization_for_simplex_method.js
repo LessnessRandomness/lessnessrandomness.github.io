@@ -168,3 +168,7 @@ localization["the_optimal_plan"]["en"] = "The optimal plan of the given LPP is "
 localization["unbounded_objective"] = {};
 localization["unbounded_objective"]["lv"] = "Redzams, ka iterāciju process beidzies ar neveiksmi. Tas ir, LPU mērķa funkcija ir neierobežota.";
 localization["unbounded_objective"]["en"] = "The iteration process has ended with failure. It means that the objective function of the LPP is unbounded.";
+
+localization["current_plan"] = {};
+localization["current_plan"]["lv"] = "Šī brīža plāns ir ";
+localization["current_plan"]["en"] = "The current plan is ";

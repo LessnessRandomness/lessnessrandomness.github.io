@@ -280,13 +280,13 @@ class SimplexTable {
 		this.iteration = iteration;
 	}
 	B(n) {
-		return this.table.matrix[n][this.table.cols-1];
+		return this.table.matrix[n][this.table.cols-1].copy();
 	}
 	D(n) {
-		return this.table.matrix[this.table.rows-1][n];
+		return this.table.matrix[this.table.rows-1][n].copy();
 	}
 	d() {
-		return this.table.matrix[this.table.rows-1][this.table.cols-1];
+		return this.table.matrix[this.table.rows-1][this.table.cols-1].copy();
 	}
 	copy() {
 		var bV = [], sV = [], aV = [];
@@ -951,14 +951,17 @@ class LinearProgrammingProblem {
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["start_iterations"][language]));
 		place.appendChild(paragraph);
+		var allCurrentPlans = [];
 		for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
 			var row = solution["phaseII"]["listOfPivots"][i][0];
 			var col = solution["phaseII"]["listOfPivots"][i][1];
 			paragraph = document.createElement("p");
 			paragraph.appendChild(MathML.done(simplexTable.toMathML(row, col)));
 			place.appendChild(paragraph);
+			allCurrentPlans.push(simplexTable.getPlan());
 			simplexTable.moveToNextIteration(row, col);
 		}
+		allCurrentPlans.push(simplexTable.getPlan());
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["resulting_table"][language]));
 		place.appendChild(paragraph);
@@ -997,7 +1000,24 @@ class LinearProgrammingProblem {
 				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["original_LPP_has_variables_without_nonnegativity"][language]));
 				place.appendChild(paragraph);
-				var variables = [], newOptimalPlan = [];
+				
+				var plans = [];
+				for (var i = 0; i < allCurrentPlans.length; i++) {
+					for (var j = 0; j < transformations.length; j++) {
+						var oldVariable = transformations[j][0], newVariableOne = transformations[j][1], newVariableTwo = transformations[j][2];
+						var value = allCurrentPlans[i][newVariableOne].substract(allCurrentPlans[i][newVariableTwo]);
+						allCurrentPlans[i][newVariableOne] = value;
+						allCurrentPlans[i][newVariableTwo] = undefined;
+					}
+					plans.push([]);
+					for (var j = 0; j < allCurrentPlans[i].length; j++) {
+						if (allCurrentPlans[i][j] !== undefined) {
+							plans[i].push(allCurrentPlans[i][j]);
+						}
+					}
+				}
+				alert(JSON.stringify(plans));
+				
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
 					paragraph = document.createElement("p");
@@ -1012,10 +1032,17 @@ class LinearProgrammingProblem {
 					var math = difference.toMathML();
 					math.push(new MathML("mo", textNode("=")));
 					var value = optimalPlan[newVariableOne].substract(optimalPlan[newVariableTwo]);
-					newOptimalPlan[oldVariable] = value;
+					optimalPlan[newVariableOne] = value;
+					optimalPlan[newVariableTwo] = undefined;
 					math = math.concat(value.toMathML());
 					paragraph.appendChild(MathML.done(MathML.row(math)));
 					place.appendChild(paragraph);
+				}
+				var newOptimalPlan = []
+				for (var i = 0; i < optimalPlan.length; i++) {
+					if (optimalPlan[i] !== undefined) {
+						newOptimalPlan.push(optimalPlan[i])
+					}
 				}
 				var t1 = [], t2 = [];
 				for (var i = 0; i < newOptimalPlan.length; i++) {
@@ -1640,7 +1667,7 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 	}
 }
 
-function makeSVG(place, x1, x2, y1, y2, scale) {
+function makeSVG(place, x1, x2, y1, y2, scale, addArrowHeadDef = false) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var width = x2.substract(x1).add(unit).multiply(scale);
 	var height = y2.substract(y1).add(unit).multiply(scale);
@@ -1648,6 +1675,21 @@ function makeSVG(place, x1, x2, y1, y2, scale) {
 	svg.setAttribute("width", fractionToDecimal(width));
 	svg.setAttribute("height", fractionToDecimal(height));
 	place.appendChild(svg);
+	if (addArrowHeadDef) {
+		var def = document.createElementNS("http://www.w3.org/2000/svg", "def");
+		var marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+		var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+		polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+		marker.appendChild(polygon);
+		marker.setAttribute("id", "arrowhead");
+		marker.setAttribute("markerWidth", "10");
+		marker.setAttribute("markerHeight", "7");
+		marker.setAttribute("refX", "0");
+		marker.setAttribute("refY", "3.5");
+		marker.setAttribute("orient", "auto");
+		defs.appendChild(marker);
+		svg.appendChild(defs);
+	}
 	return svg;
 }
 
