@@ -951,6 +951,7 @@ class LinearProgrammingProblem {
 		paragraph = document.createElement("p");
 		paragraph.appendChild(textNode(localization["start_iterations"][language]));
 		place.appendChild(paragraph);
+		simplexTable.iteration = 0;
 		var allCurrentPlans = [];
 		for (var i = 0; i < solution["phaseII"]["listOfPivots"].length; i++) {
 			var row = solution["phaseII"]["listOfPivots"][i][0];
@@ -1000,8 +1001,8 @@ class LinearProgrammingProblem {
 				paragraph = document.createElement("p");
 				paragraph.appendChild(textNode(localization["original_LPP_has_variables_without_nonnegativity"][language]));
 				place.appendChild(paragraph);
-				
 				var plans = [];
+				
 				for (var i = 0; i < allCurrentPlans.length; i++) {
 					for (var j = 0; j < transformations.length; j++) {
 						var oldVariable = transformations[j][0], newVariableOne = transformations[j][1], newVariableTwo = transformations[j][2];
@@ -1016,8 +1017,7 @@ class LinearProgrammingProblem {
 						}
 					}
 				}
-				alert(JSON.stringify(plans));
-				
+				allCurrentPlans = plans;
 				for (var i = 0; i < transformations.length; i++) {
 					var oldVariable = transformations[i][0], newVariableOne = transformations[i][1], newVariableTwo = transformations[i][2];
 					paragraph = document.createElement("p");
@@ -1060,8 +1060,10 @@ class LinearProgrammingProblem {
 				paragraph.appendChild(textNode(localization["the_optimal_plan"][language]));
 				paragraph.appendChild(MathML.done(MathML.row(t)));
 				paragraph.appendChild(textNode("."));
-				place.appendChild(paragraph);
+				place.appendChild(paragraph);	
 			}
+			if (!hasTransformations & this.objective.linexp.coeffs.length === 2)
+				this.draw(place, allCurrentPlans);
 		} else {
 			paragraph = document.createElement("p");
 			paragraph.appendChild(textNode(localization["unbounded_objective"][language]));
@@ -1356,8 +1358,6 @@ class LinearProgrammingProblem {
 			inputFields["nonnegativeVariables"] = document.createElement("input");
 			inputFields["nonnegativeVariables"].type = "text";
 			inputFields["nonnegativeVariables"].size = 6;
-			//inputFields["nonnegativeVariables"].value = "1 2";
-			//inputFields["nonnegativeVariables"].disabled = true;
 			paragraph.appendChild(inputFields["nonnegativeVariables"]);
 			place.appendChild(paragraph);
 			paragraph = document.createElement("p");
@@ -1569,7 +1569,7 @@ function fractionToDecimal(f) {
 	return (Number(f.numer * 1000000n / f.denom)/1000000);
 }
 
-Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale) {
+Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale, plans = undefined) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var info = this.information();
 	if (!info["bounded"])
@@ -1595,6 +1595,25 @@ Polytope.prototype.drawIfBounded = function(svg, bx1, bx2, by1, by2, scale) {
 	polygon.setAttribute("stroke", "green");
 	polygon.setAttribute("stroke-width", "2");
 	svg.appendChild(polygon);
+
+	if (plans !== undefined) {
+		for (var i = 0; i < plans.length - 1; i++) {
+			var x1 = plans[i][0], y1 = plans[i][1], x2 = plans[i+1][0], y2 = plans[i+1][1];
+			x1 = fractionToDecimal(x1.substract(bx1).add(half).multiply(scale));
+			x2 = fractionToDecimal(x2.substract(bx1).add(half).multiply(scale));
+			y1 = fractionToDecimal(height.substract(y1.substract(by1).add(half).multiply(scale)));
+			y2 = fractionToDecimal(height.substract(y2.substract(by1).add(half).multiply(scale)));
+			var arrow = document.createElementNS("http://www.w3.org/2000/svg", "line");
+			arrow.setAttribute("x1", x1);
+			arrow.setAttribute("y1", y1);
+			arrow.setAttribute("x2", x2);
+			arrow.setAttribute("y2", y2);
+			arrow.setAttribute("marker-end", "url(#arrowhead)");
+			arrow.setAttribute("stroke", "green");
+			arrow.setAttribute("stroke-width", "1.5");
+			svg.appendChild(arrow);
+		}
+	}
 			
 	for (var i = 0; i < vertices.length; i++) {
 		var dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -1667,7 +1686,7 @@ function drawAxisEtc(svg, x1, x2, y1, y2, scale) {
 	}
 }
 
-function makeSVG(place, x1, x2, y1, y2, scale, addArrowHeadDef = false) {
+function makeSVG(place, x1, x2, y1, y2, scale) {
 	var zero = new Fraction(0), half = new Fraction(1, 2), unit = new Fraction(1);
 	var width = x2.substract(x1).add(unit).multiply(scale);
 	var height = y2.substract(y1).add(unit).multiply(scale);
@@ -1675,25 +1694,23 @@ function makeSVG(place, x1, x2, y1, y2, scale, addArrowHeadDef = false) {
 	svg.setAttribute("width", fractionToDecimal(width));
 	svg.setAttribute("height", fractionToDecimal(height));
 	place.appendChild(svg);
-	if (addArrowHeadDef) {
-		var def = document.createElementNS("http://www.w3.org/2000/svg", "def");
-		var marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
-		var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-		polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
-		marker.appendChild(polygon);
-		marker.setAttribute("id", "arrowhead");
-		marker.setAttribute("markerWidth", "10");
-		marker.setAttribute("markerHeight", "7");
-		marker.setAttribute("refX", "0");
-		marker.setAttribute("refY", "3.5");
-		marker.setAttribute("orient", "auto");
-		defs.appendChild(marker);
-		svg.appendChild(defs);
-	}
+	var defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+	var marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+	var polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+	polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+	marker.appendChild(polygon);
+	marker.setAttribute("id", "arrowhead");
+	marker.setAttribute("markerWidth", "10");
+	marker.setAttribute("markerHeight", "7");
+	marker.setAttribute("refX", "10");
+	marker.setAttribute("refY", "3.5");
+	marker.setAttribute("orient", "auto");
+	defs.appendChild(marker);
+	svg.appendChild(defs);
 	return svg;
 }
 
-LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(50)) {
+LinearProgrammingProblem.prototype.draw = function(place, plans = undefined, scale = new Fraction(50)) {
 	var numberOfVariables = this.objective.linexp.coeffs.length;
 	if (numberOfVariables !== 2) {
 		var paragraph = document.createElement("p");
@@ -1711,7 +1728,7 @@ LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(5
 		if (info["bounded"]) {
 			var svg = makeSVG(place, x1, x2, y1, y2, scale);
 			drawAxisEtc(svg, x1, x2, y1, y2, scale);
-			this.polytope.drawIfBounded(svg, x1, x2, y1, y2, scale);
+			this.polytope.drawIfBounded(svg, x1, x2, y1, y2, scale, plans);
 		} else {
 			var verticesAsFractions = info["vertices"];
 			if (verticesAsFractions.length === 0) {
@@ -1751,7 +1768,7 @@ LinearProgrammingProblem.prototype.draw = function(place, scale = new Fraction(5
 			}
 			var svg = makeSVG(place, x1, x2, y1, y2, scale);
 			drawAxisEtc(svg, x1, x2, y1, y2, scale);
-			newPolytope.drawIfBounded(svg, x1, x2, y1, y2, scale);
+			newPolytope.drawIfBounded(svg, x1, x2, y1, y2, scale, plans);
 			return;
 		}
 	} else {
