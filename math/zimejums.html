@@ -9,10 +9,17 @@
 	</head>
 	<body>
 		<div id="test1"></div>
-		<div id="test2"></div>
 		<script>
 			var test1 = document.getElementById("test1");
-			LinearProgrammingProblem.calculatorWithDrawing(test1, "lv");
+			var inequality_1 = new LinearConstraint(new LinearExpression([new Fraction(2), new Fraction(3)]), new Fraction(12), "le");
+			var inequality_2 = new LinearConstraint(new LinearExpression([new Fraction(3), new Fraction(-1)]), new Fraction(9), "le");
+			var inequality_3 = new LinearConstraint(new LinearExpression([new Fraction(-1), new Fraction(3)]), new Fraction(10), "le");
+			var inequality_4 = new LinearConstraint(new LinearExpression([new Fraction(1), new Fraction(0)]), new Fraction(3), "le");
+			var linear_constraints = [inequality_1, inequality_2, inequality_3, inequality_4];
+			var nonnegative_variables = [0, 1]
+			var objective = new LinearObjective(new LinearExpression([new Fraction(2), new Fraction(1)]));
+			var LPP = new LinearProgrammingProblem(objective, linear_constraints, nonnegative_variables);
+			LPP.draw(test1);
 		</script>
 	</body>
 </html>
