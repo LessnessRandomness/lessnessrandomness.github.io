@@ -2404,7 +2404,7 @@ Visslavenākajā 'Casta' gleznā
 
 602
 00:25:45,610 --> 00:25:47,874
-15. kategorija ir burtiski 
+15. kategorija ir burtiski
 
 603
 00:25:47,870 --> 00:25:50,274
@@ -2513,4 +2513,468 @@ ar gaišu ādas krāsu un balto rasi.
 629
 00:26:53,040 --> 00:26:55,711
 To mēs padziļināti aplūkosim vēlāk.
+
+630
+00:26:55,710 --> 00:26:57,262
+Tad 'Mestizo', kas nozīmēja
+
+631
+00:26:57,260 --> 00:27:00,027
+jauktas rases eiropiešu indiāņus,
+
+632
+00:27:00,020 --> 00:27:02,525
+kas netika pieņemti kā pilnvērtīgi spāņi,
+
+633
+00:27:02,520 --> 00:27:05,220
+taču parasti vienalga dzīvoja starp tiem.
+
+634
+00:27:05,220 --> 00:27:07,220
+Indiānis, kas nozīmēja ikvienu
+
+635
+00:27:07,220 --> 00:27:08,928
+ar indiāņu senčiem, kas bija
+
+636
+00:27:08,920 --> 00:27:11,186
+kulturāli indiānis un dzīvoja starp tiem.
+
+637
+00:27:11,180 --> 00:27:13,200
+Un melnais, kas nozīmēja ikvienu
+
+638
+00:27:13,200 --> 00:27:15,276
+ar melno afrikāņu senčiem.
+
+639
+00:27:15,270 --> 00:27:17,000
+Lai gan melnos cilvēkus apzīmēja
+
+640
+00:27:17,000 --> 00:27:18,150
+ar dažādiem terminiem,
+
+641
+00:27:18,150 --> 00:27:19,500
+balstoties uz pakāpi, kādā
+
+642
+00:27:19,500 --> 00:27:20,772
+viņu senči bija melni,
+
+643
+00:27:20,770 --> 00:27:23,422
+piemēram, vārdi 'Casta' un 'Mulatto', -
+
+644
+00:27:23,420 --> 00:27:25,380
+viņi visi bija pakļauti ļoti līdzīgai
+
+645
+00:27:25,380 --> 00:27:27,210
+likumiskai un sociālai apspiešanai,
+
+646
+00:27:27,210 --> 00:27:30,403
+jo viņus tomēr uzskatīja par netīriem.
+
+647
+00:27:30,400 --> 00:27:33,940
+No šīm kategorijām melnie bija vienīgie,
+
+648
+00:27:33,940 --> 00:27:36,403
+par kuru uzskatīja, ka tā savienībā
+
+649
+00:27:36,400 --> 00:27:38,535
+ar citām samaitā to citu asinis.
+
+650
+00:27:38,530 --> 00:27:41,081
+Tātad bērni ar vismaz vienu vecāku,
+
+651
+00:27:41,080 --> 00:27:43,227
+kam bija zināmi afrikāņu senči,
+
+652
+00:27:43,220 --> 00:27:45,165
+bija legāli nolemti visaptverošas
+
+653
+00:27:45,160 --> 00:27:46,991
+diskriminācijas dzīvei.
+
+654
+00:27:46,991 --> 00:27:48,990
+Tā tas bija līdz pat pašām
+
+655
+00:27:48,990 --> 00:27:52,027
+spāņu imperiālās valdīšanas beigām.
+
+656
+00:27:52,020 --> 00:27:53,102
+Tagad es izskaidrošu,
+
+657
+00:27:53,100 --> 00:27:54,960
+kā tas patiesībā notika.
+
+658
+00:27:54,960 --> 00:27:58,090
+Šis process bija neiedomājami cieši
+
+659
+00:27:58,090 --> 00:28:00,090
+saistīts ar verdzību un
+
+660
+00:28:00,090 --> 00:28:02,702
+ar iepriekš minētajiem precedentiem.
+
+661
+00:28:02,700 --> 00:28:04,243
+Pēc likumiem, kas paziņoja, ka
+
+662
+00:28:04,240 --> 00:28:07,231
+indiāņi faktiski ir vecie kristieši un
+
+663
+00:28:07,230 --> 00:28:11,436
+ka tātad tehniski ir atcelta indiāņu verdzība,
+
+664
+00:28:11,430 --> 00:28:13,982
+spāņu autoritātes ar steigu meklēja,
+
+665
+00:28:13,980 --> 00:28:15,530
+ar ko viņus aizvietot,
+
+666
+00:28:15,530 --> 00:28:17,495
+jo maksāt saviem strādniekiem
+
+667
+00:28:17,490 --> 00:28:20,253
+viņi patiešām, patiešām nevēlējās.
+
+668
+00:28:20,250 --> 00:28:22,100
+Ietekmējušies no savu kaimiņu
+
+669
+00:28:22,100 --> 00:28:23,950
+portugāļu nesenās iesaistīšanās
+
+670
+00:28:23,950 --> 00:28:25,810
+afrikāņu vergu tirdzniecībā,
+
+671
+00:28:25,810 --> 00:28:27,881
+viņi izšķīrās par labu senajai
+
+672
+00:28:27,880 --> 00:28:30,813
+melno afrikāņu paverdzināšanas praksei.
+
+673
+00:28:30,810 --> 00:28:33,979
+16. gadsimta gaitā pat tie,
+
+674
+00:28:33,970 --> 00:28:35,655
+kas bija nelokāmi Ameriku
+
+675
+00:28:35,650 --> 00:28:37,833
+pirmiedzīvotāju cilvēcības aizstāvji,
+
+676
+00:28:37,830 --> 00:28:40,240
+kas varonīgi cīnījās pret to piedzīvotajiem
+
+677
+00:28:40,240 --> 00:28:42,205
+pāridarījumiem no spāņu koloniālās
+
+678
+00:28:42,200 --> 00:28:43,384
+sistēmas puses,
+
+679
+00:28:43,384 --> 00:28:45,380
+reti (ja vispār) izrādīja
+
+680
+00:28:45,380 --> 00:28:48,191
+tādu pašu humanitāru dedzību,
+
+681
+00:28:48,190 --> 00:28:50,434
+aizstāvot paverdzinātos melnos afrikāņus.
+
+682
+00:28:50,430 --> 00:28:52,173
+Pats redzamākais piemērs ir
+
+683
+00:28:52,170 --> 00:28:53,735
+Bartolomē de las Kasass,
+
+684
+00:28:53,730 --> 00:28:55,683
+izcils spāņu priesteris.
+
+685
+00:28:55,680 --> 00:28:57,509
+Viņa argumenti bija nozīmīgi
+
+686
+00:28:57,500 --> 00:28:59,902
+katoļu baznīcas un spāņu monarhu
+
+687
+00:28:59,900 --> 00:29:02,483
+pārliecināšanā, ka jāpieņem iepriekš minētās
+
+688
+00:29:02,480 --> 00:29:03,900
+reformas, kas bija vērstas uz
+
+689
+00:29:03,900 --> 00:29:06,695
+indiāņu likumīgā statusa uzlabošanu.
+
+690
+00:29:06,695 --> 00:29:08,690
+Nepārspīlējot var teikt,
+
+691
+00:29:08,690 --> 00:29:11,293
+ka bez viņa spāņu kolonizācija
+
+692
+00:29:11,290 --> 00:29:12,779
+būtu bijusi vēl daudz
+
+693
+00:29:12,770 --> 00:29:14,956
+brutālāka nekā tā jau bija.
+
+694
+00:29:14,950 --> 00:29:18,640
+Un tomēr viņš 1518. gadā argumentēja,
+
+695
+00:29:18,640 --> 00:29:20,733
+ka indiāņu vergus vajadzētu vienkārši
+
+696
+00:29:20,730 --> 00:29:22,577
+aizvietot ar afrikāņu vergiem,
+
+697
+00:29:22,570 --> 00:29:24,650
+un viņš tobrīd šajā idejā
+
+698
+00:29:24,650 --> 00:29:26,726
+neredzēja nekā slikta.
+
+699
+00:29:26,720 --> 00:29:29,596
+Vienprātība tagad bija vispārēja,
+
+700
+00:29:29,590 --> 00:29:32,834
+un melnie, kā tos tagad sauca,
+
+701
+00:29:32,830 --> 00:29:35,373
+bija praktiski bez aizstāvjiem.
+
+702
+00:29:35,370 --> 00:29:38,657
+Las Kasass apmēram dekādi vēlāk
+
+703
+00:29:38,650 --> 00:29:40,299
+atteicās no savas nostājas.
+
+704
+00:29:40,290 --> 00:29:41,360
+Viņš argumentēja, ka
+
+705
+00:29:41,360 --> 00:29:42,532
+viņu bija maldinājuši,
+
+706
+00:29:42,530 --> 00:29:44,782
+likuši noticēt tam, ka afrikāņi, kurus bija
+
+707
+00:29:44,780 --> 00:29:46,476
+nolaupījuši un paverdzinājuši
+
+708
+00:29:46,470 --> 00:29:49,147
+portugāļi, no kuriem Spānija
+
+709
+00:29:49,140 --> 00:29:52,191
+šajā agrajā periodā pirka vairumu savu vergu,
+
+710
+00:29:52,190 --> 00:29:54,285
+bija sagūstīti tā sauktajos
+
+711
+00:29:54,280 --> 00:29:57,137
+"taisnīgajos karos", piedāvājot viņiem iespēju
+
+712
+00:29:57,130 --> 00:29:59,867
+pāriet kristietībā, no kuras viņi atteikušies.
+
+713
+00:29:59,860 --> 00:30:01,780
+Viņš vēl aizvien izmantoja klasisko
+
+714
+00:30:01,780 --> 00:30:04,382
+reliģisko verdzības pamatojumu,
+
+715
+00:30:04,380 --> 00:30:07,495
+piemērojot to vienlīdzīgi neatkarīgi no rases,
+
+716
+00:30:07,490 --> 00:30:10,740
+taču kaitējums tad jau bija nodarīts.
+
+717
+00:30:10,740 --> 00:30:12,591
+Melnie vergi tika importēti
+
+718
+00:30:12,590 --> 00:30:14,772
+spāņu Amerikās masveidā,
+
+719
+00:30:14,770 --> 00:30:16,744
+un veidojās nu vairs neizlabojami
+
+720
+00:30:16,740 --> 00:30:18,390
+sociāli un likumiski pamatojumi
+
+721
+00:30:18,390 --> 00:30:20,330
+afrikāņu paverdzināšanai.
+
+722
+00:30:20,330 --> 00:30:22,431
+Tā rezultātā izplatījās
+
+723
+00:30:22,430 --> 00:30:24,876
+rasistiskais priekšstats par melno rasi,
+
+724
+00:30:24,870 --> 00:30:28,410
+un spāņi jau lūkojās uz afrikāņu vergiem
+
+725
+00:30:28,410 --> 00:30:29,746
+kā nevērtīgiem cilvēkiem,
+
+726
+00:30:29,740 --> 00:30:31,613
+kas bija derīgi tikai un vienīgi
+
+727
+00:30:31,613 --> 00:30:33,610
+piespiedu darbam uz visu dzīvi.
+
+728
+00:30:33,610 --> 00:30:36,000
+Taču de las Kasass, kad viņš mainīja
+
+729
+00:30:36,000 --> 00:30:38,320
+savas domas par afrikāņu verdzību,
+
+730
+00:30:38,320 --> 00:30:40,146
+bija paudis ļoti labu argumentu,
+
+731
+00:30:40,140 --> 00:30:43,426
+ko viņa laikabiedri uztvēra nopietni -
+
+732
+00:30:43,420 --> 00:30:46,389
+nebija pamata esošajos likumos,
+
+733
+00:30:46,380 --> 00:30:49,123
+ne ebreju, ne kristiešu un ne musulmaņu,
+
+734
+00:30:49,120 --> 00:30:50,893
+kas pieļautu beznosacījuma
+
+735
+00:30:50,890 --> 00:30:53,627
+pastāvīgu melno afrikāņu paverdzināšanu,
+
+736
+00:30:53,620 --> 00:30:56,146
+vienalga cik mazvērtīgāki viņi
+
+737
+00:30:56,140 --> 00:30:58,215
+it kā bija vai nebija.
+
+738
+00:30:58,210 --> 00:30:59,513
+Ja viņi bija kristieši vai
+
+739
+00:30:59,510 --> 00:31:01,575
+bija pārgājuši kristietībā,
+
+740
+00:31:01,570 --> 00:31:04,278
+likums skaidri teica, ka viņi ir jāatbrīvo.
+
+741
+00:31:04,270 --> 00:31:06,386
+Un turklāt lielākā daļa no viņiem nebija,
+
+742
+00:31:06,380 --> 00:31:08,563
+gluži tāpat kā indiāņi,
+
+743
+00:31:08,560 --> 00:31:10,000
+nekad dzirdējuši par Kristu
+
+744
+00:31:10,000 --> 00:31:11,860
+pirms kontakta ar eiropiešiem un
+
+745
+00:31:11,860 --> 00:31:15,892
+tātad nevar tikt tiesāti par savu neticību.
 
