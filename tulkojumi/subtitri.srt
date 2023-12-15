@@ -2280,7 +2280,7 @@ Tā kā netika uzskatīts, ka indiāņiem
 
 571
 00:24:22,830 --> 00:24:24,507
-būtu netīras asinis, 
+būtu netīras asinis,
 
 572
 00:24:24,500 --> 00:24:28,121
@@ -2325,4 +2325,168 @@ augošai rasistiskai iekārtai, kas sākotnēji
 582
 00:24:54,270 --> 00:24:58,379
 attīstīsies, lai diskriminētu melnos vergus.
+
+583
+00:24:58,370 --> 00:24:59,790
+Šeit man vajadzēs kādu brīdi,
+
+584
+00:24:59,790 --> 00:25:01,113
+lai apspriestu slavenās
+
+585
+00:25:01,110 --> 00:25:04,685
+'Casta' gleznas no 18. un 19. gadsimta.
+
+586
+00:25:04,680 --> 00:25:06,040
+Varbūt esi tās jau redzējis.
+
+587
+00:25:06,040 --> 00:25:08,267
+Daži vēsturnieki pārspīlēja
+
+588
+00:25:08,260 --> 00:25:11,384
+šo gleznu nozīmīgumu, tā rezultātā ticot,
+
+589
+00:25:11,380 --> 00:25:14,674
+ka spāņu koloniālā sistēma darbojās ar,
+
+590
+00:25:14,670 --> 00:25:17,561
+godīgi sakot, smieklīgi sarežģītu sistēmu,
+
+591
+00:25:17,560 --> 00:25:19,314
+kas balstījās rasu hierarhijā un
+
+592
+00:25:19,310 --> 00:25:22,914
+aprakstīja ikvienu iespējamo rasu sajaukumu,
+
+593
+00:25:22,910 --> 00:25:25,996
+un diskriminēja katru dažādos apmēros.
+
+594
+00:25:25,990 --> 00:25:29,248
+Taču patiesībā šīs gleznas
+
+595
+00:25:29,240 --> 00:25:31,012
+bija tikai mākslas darbi,
+
+596
+00:25:31,010 --> 00:25:33,902
+kurus bija pasūtījušas ar rasi apsēsta elite,
+
+597
+00:25:33,900 --> 00:25:37,634
+nevis liecības par patiešām eksistējušu
+
+598
+00:25:37,630 --> 00:25:40,125
+sociālu vai likumisku hierarhiju.
+
+599
+00:25:40,120 --> 00:25:41,972
+Tas kļūst daudz acīmredzamāk,
+
+600
+00:25:41,970 --> 00:25:43,314
+kad palūkojamies ciešāk.
+
+601
+00:25:43,310 --> 00:25:45,613
+Visslavenākajā 'Casta' gleznā
+
+602
+00:25:45,610 --> 00:25:47,874
+15. kategorija ir burtiski 
+
+603
+00:25:47,870 --> 00:25:50,274
+nosaukta "Es tevi nesaprotu",
+
+604
+00:25:50,270 --> 00:25:52,650
+tā darot skaidru, ka šo darbu, visticamāk,
+
+605
+00:25:52,650 --> 00:25:54,034
+jau pašā sākumā nebija
+
+606
+00:25:54,030 --> 00:25:56,246
+jāuztver pārlieku nopietni.
+
+607
+00:25:56,240 --> 00:25:57,951
+Dažus jēdzienus šajās gleznās
+
+608
+00:25:57,950 --> 00:26:00,775
+lietoja bieži - piemēram, 'Mulato',
+
+609
+00:26:00,770 --> 00:26:03,467
+lai aprakstītu melnā un spāņa bērnu,
+
+610
+00:26:03,460 --> 00:26:05,290
+vai 'Mestizo', lai aprakstītu
+
+611
+00:26:05,290 --> 00:26:07,474
+indiāņa un spāņa bērnu.
+
+612
+00:26:07,470 --> 00:26:09,787
+Galvenais te ir tas, ka nepastāvēja
+
+613
+00:26:09,780 --> 00:26:12,236
+vērā ņemama oficiāla kastu sistēma,
+
+614
+00:26:12,230 --> 00:26:15,238
+kas balstītos tādā kategoriju pārpilnībā,
+
+615
+00:26:15,230 --> 00:26:17,360
+kas aprakstītu ikvienu iespējamo
+
+616
+00:26:17,360 --> 00:26:19,168
+rasu sajaukšanās pakāpi.
+
+617
+00:26:19,160 --> 00:26:23,766
+Jā, spāņu Amerikā bija kastu sistēma,
+
+618
+00:26:23,760 --> 00:26:26,055
+taču praksē tā bija daudz vienkāršāka.
+
+619
+00:26:26,050 --> 00:26:29,220
+Vissvarīgākās kategorijas bija spāņi,
+
+620
+00:26:29,220 --> 00:26:31,220
+parasti ar to apzīmējot eiropiešus vai
+
+621
+00:26:31,220 --> 00:26:34,984
+vismaz kādu ar jauktu eiropiešu un indiāņu rasi,
+
+622
+00:26:34,980 --> 00:26:38,500
+ko bija pieņēmusi viņa ģimenes spāņu puse un
+
+623
+00:26:38,500 --> 00:26:42,190
+kas bija kulturāli spānis un
 
